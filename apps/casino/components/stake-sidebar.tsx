@@ -723,14 +723,17 @@ export const StakeSidebar = memo(function StakeSidebar({ user }: StakeSidebarPro
                             background: 'linear-gradient(to right, rgba(37, 99, 235, 0.08), transparent)'
                           } : {}}
                         >
-                          <Icon
-                            className={`flex-shrink-0 ${
-                              isDisabled ? 'text-gray-500' : 'text-white'
-                            } ${isCollapsed ? 'w-6 h-6' : 'w-5 h-5'} transition-colors`}
+                          <div
                             style={isActive && !isDisabled ? {
                               color: '#FFD700'
                             } : {}}
-                          />
+                          >
+                            <Icon
+                              className={`flex-shrink-0 ${
+                                isDisabled ? 'text-gray-500' : 'text-white'
+                              } ${isCollapsed ? 'w-6 h-6' : 'w-5 h-5'} transition-colors`}
+                            />
+                          </div>
                           {!isCollapsed && (
                             <span className="flex-1">{item.label}</span>
                           )}

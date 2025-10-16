@@ -1,3 +1,6 @@
+export const dynamic = 'force-dynamic'
+
+
 import GameCatalogV2 from '@/components/game-catalog-v2'
 import { Clock } from 'lucide-react'
 
