@@ -1,8 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npm run build --filter=@mypokies/casino",
-  "devCommand": "npm run dev --filter=@mypokies/casino",
-  "installCommand": "npm install --legacy-peer-deps",
-  "framework": null,
-  "outputDirectory": "apps/casino/.next"
+  "buildCommand": "cd ../.. && pnpm install && pnpm build --filter=@mypokies/casino",
+  "devCommand": "pnpm dev",
+  "installCommand": "pnpm install --frozen-lockfile --filter=@mypokies/casino...",
+  "framework": "nextjs",
+  "outputDirectory": ".next",
+  "root": "apps/casino"
 }
