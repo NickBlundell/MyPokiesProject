@@ -1,0 +1,222 @@
+{
+  "metadata": {
+    "total_games": 40,
+    "last_updated": "2025-01-14",
+    "purpose": "Reference data for popular online casino slot games",
+    "note": "Thumbnail URLs are placeholders - replace with actual CDN URLs"
+  },
+  "providers": {
+    "NetEnt": {
+      "count": 8,
+      "description": "Industry-leading Swedish game provider established in 1996"
+    },
+    "Pragmatic Play": {
+      "count": 10,
+      "description": "Modern provider known for high-quality slots since 2015"
+    },
+    "Play'n GO": {
+      "count": 8,
+      "description": "Swedish provider with innovative and popular titles"
+    },
+    "Microgaming": {
+      "count": 8,
+      "description": "Legendary provider with world-record progressive jackpots"
+    },
+    "Red Tiger": {
+      "count": 4,
+      "description": "NetEnt subsidiary specializing in Megaways slots"
+    },
+    "Big Time Gaming": {
+      "count": 2,
+      "description": "Creator of the Megaways mechanic"
+    }
+  },
+  "featured_games": [
+    {
+      "name": "Starburst",
+      "provider": "NetEnt",
+      "description": "The most iconic online slot with expanding wilds and win-both-ways",
+      "rtp": 96.09,
+      "volatility": "low",
+      "max_win": "50000x"
+    },
+    {
+      "name": "Gates of Olympus",
+      "provider": "Pragmatic Play",
+      "description": "Extremely popular Greek mythology cluster pays slot",
+      "rtp": 96.50,
+      "volatility": "high",
+      "max_win": "5000x"
+    },
+    {
+      "name": "Book of Dead",
+      "provider": "Play'n GO",
+      "description": "Iconic Egyptian adventure with expanding symbols",
+      "rtp": 96.21,
+      "volatility": "high",
+      "max_win": "5000x"
+    },
+    {
+      "name": "Mega Moolah",
+      "provider": "Microgaming",
+      "description": "World record holder for biggest progressive jackpot",
+      "rtp": 88.12,
+      "volatility": "medium",
+      "progressive": true
+    },
+    {
+      "name": "Sweet Bonanza",
+      "provider": "Pragmatic Play",
+      "description": "Popular candy-themed slot with tumble feature",
+      "rtp": 96.51,
+      "volatility": "high",
+      "max_win": "21100x"
+    }
+  ],
+  "games_by_category": {
+    "progressive_jackpots": [
+      "Mega Moolah",
+      "Mega Fortune",
+      "Immortal Romance Mega Moolah",
+      "Thunderstruck II Mega Moolah",
+      "Wolf Gold"
+    ],
+    "megaways": [
+      "Bonanza Megaways",
+      "Extra Chilli Megaways",
+      "Gonzo's Quest Megaways",
+      "Mystery Reels Megaways",
+      "Dragon's Luck Megaways",
+      "Piggy Riches Megaways"
+    ],
+    "cluster_pays": [
+      "Gates of Olympus",
+      "Sweet Bonanza",
+      "Reactoonz",
+      "Reactoonz 2",
+      "Rise of Olympus",
+      "Moon Princess",
+      "Sugar Rush",
+      "Starlight Princess"
+    ],
+    "high_volatility": [
+      "Dead or Alive 2",
+      "Book of Dead",
+      "Reactoonz",
+      "Big Bass Bonanza",
+      "Gates of Olympus",
+      "Sweet Bonanza",
+      "Extra Chilli Megaways"
+    ],
+    "high_rtp": [
+      "Blood Suckers (98.00%)",
+      "Immortal Romance (96.86%)",
+      "Extra Chilli Megaways (96.82%)",
+      "Dead or Alive 2 (96.80%)",
+      "Big Bass Bonanza (96.71%)"
+    ]
+  },
+  "themes": {
+    "mythology": [
+      "Gates of Olympus",
+      "Rise of Olympus",
+      "Thunderstruck II",
+      "Avalon II"
+    ],
+    "egypt": [
+      "Book of Dead",
+      "Legacy of Dead",
+      "John Hunter and the Tomb of the Scarab Queen"
+    ],
+    "animals": [
+      "Wolf Gold",
+      "The Dog House",
+      "Mega Moolah",
+      "Dragon's Luck Megaways"
+    ],
+    "candy_food": [
+      "Sweet Bonanza",
+      "Sweet Bonanza 1000",
+      "Sugar Rush",
+      "Extra Chilli Megaways"
+    ],
+    "adventure": [
+      "Gonzo's Quest",
+      "Book of Dead",
+      "Jungle Jim El Dorado",
+      "Jack and the Beanstalk"
+    ],
+    "horror_fantasy": [
+      "Immortal Romance",
+      "Blood Suckers",
+      "Book of Oz"
+    ]
+  },
+  "sample_game_objects": [
+    {
+      "game_id": "netent_starburst",
+      "game_name": "Starburst",
+      "provider": "NetEnt",
+      "category": "slots",
+      "subcategory": "video_slots",
+      "thumbnail_url": "/images/games/starburst.jpg",
+      "rtp": 96.09,
+      "volatility": "low",
+      "has_jackpot": false,
+      "has_freespins": true,
+      "is_featured": true,
+      "tags": ["popular", "classic", "space", "gems"],
+      "lines": 10,
+      "reels": 5,
+      "max_multiplier": 50000
+    },
+    {
+      "game_id": "pragmatic_gates_olympus",
+      "game_name": "Gates of Olympus",
+      "provider": "Pragmatic Play",
+      "category": "slots",
+      "subcategory": "video_slots",
+      "thumbnail_url": "/images/games/gates-of-olympus.jpg",
+      "rtp": 96.50,
+      "volatility": "high",
+      "has_jackpot": false,
+      "has_freespins": true,
+      "is_featured": true,
+      "tags": ["popular", "mythology", "cluster_pays", "multipliers"],
+      "reels": 6,
+      "max_multiplier": 5000
+    },
+    {
+      "game_id": "playngo_book_of_dead",
+      "game_name": "Book of Dead",
+      "provider": "Play'n GO",
+      "category": "slots",
+      "subcategory": "video_slots",
+      "thumbnail_url": "/images/games/book-of-dead.jpg",
+      "rtp": 96.21,
+      "volatility": "high",
+      "has_jackpot": false,
+      "has_freespins": true,
+      "is_featured": true,
+      "tags": ["popular", "egypt", "expanding_symbols", "adventure"],
+      "lines": 10,
+      "reels": 5,
+      "max_multiplier": 5000
+    }
+  ],
+  "image_placeholders": {
+    "option_1": "Create /public/images/games/ directory and add actual images",
+    "option_2": "Use CDN URLs: https://cdn.mypokies.com/games/{game-name}.jpg",
+    "option_3": "Use placeholder service: https://via.placeholder.com/300x200/{game-name}",
+    "option_4": "Fetch from provider APIs (NetEnt, Pragmatic Play, etc.)",
+    "recommended_size": "300x200px or 16:9 ratio",
+    "format": "JPG, PNG, or WEBP"
+  },
+  "filter_examples": {
+    "by_provider": "SELECT * FROM games WHERE provider = 'NetEnt'",
+    "by_volatility": "SELECT * FROM games WHERE volatility = 'high'",
+    "by_jackpot": "SELECT * FROM games WHERE has_jackpot = true",
+    "by_tag": "SELECT * FROM games WHERE 'mythology' = ANY(tags)",
+    "search_name": "SELECT * FROM games WHERE game_name ILIKE '%bonanza%'"
+  }
+}

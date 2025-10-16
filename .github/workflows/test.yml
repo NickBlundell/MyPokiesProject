@@ -1,0 +1,358 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [main, develop, 'feature/**']
+  pull_request:
+    types: [opened, synchronize, reopened]
+  schedule:
+    # Run tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '8.15.6'
+
+jobs:
+  # ============================================================================
+  # Unit Tests
+  # ============================================================================
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package:
+          - ui
+          - database
+          - core
+          - security
+          - cache
+          - edge-cache
+          - database-optimizer
+          - monitoring
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests for ${{ matrix.package }}
+        run: pnpm --filter @mypokies/${{ matrix.package }} test
+        env:
+          NODE_ENV: test
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-${{ matrix.package }}
+          path: packages/${{ matrix.package }}/coverage
+
+  # ============================================================================
+  # Integration Tests
+  # ============================================================================
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: mypokies_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup database
+        run: |
+          PGPASSWORD=testpass psql -h localhost -U postgres -d mypokies_test -f scripts/test-setup.sql
+        env:
+          DATABASE_URL: postgresql://postgres:testpass@localhost:5432/mypokies_test
+
+      - name: Run integration tests
+        run: pnpm turbo test:integration
+        env:
+          DATABASE_URL: postgresql://postgres:testpass@localhost:5432/mypokies_test
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: integration-test-results
+          path: test-results/
+
+  # ============================================================================
+  # E2E Tests
+  # ============================================================================
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        browser: [chromium, firefox, webkit]
+        app: [casino, admin]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright
+        run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Build application
+        run: pnpm --filter @mypokies/${{ matrix.app }} build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL_TEST }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY_TEST }}
+
+      - name: Run E2E tests
+        run: pnpm --filter @mypokies/${{ matrix.app }} test:e2e --browser=${{ matrix.browser }}
+        env:
+          BASE_URL: http://localhost:3000
+          HEADLESS: true
+
+      - name: Upload test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e-artifacts-${{ matrix.app }}-${{ matrix.browser }}
+          path: |
+            apps/${{ matrix.app }}/test-results/
+            apps/${{ matrix.app }}/playwright-report/
+          retention-days: 7
+
+  # ============================================================================
+  # Performance Tests
+  # ============================================================================
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build applications
+        run: pnpm turbo build
+
+      - name: Run Lighthouse CI
+        run: |
+          npm install -g @lhci/cli
+          lhci autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+      - name: Run load tests
+        run: |
+          npm install -g k6
+          k6 run tests/load/scenario.js
+        env:
+          K6_CLOUD_TOKEN: ${{ secrets.K6_CLOUD_TOKEN }}
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-results
+          path: .lighthouseci/
+
+  # ============================================================================
+  # Security Tests
+  # ============================================================================
+  security-tests:
+    name: Security Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run security audit
+        run: pnpm audit --audit-level=moderate
+
+      - name: Run OWASP dependency check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'MyPokies'
+          path: '.'
+          format: 'HTML'
+          args: >
+            --enableRetired
+            --enableExperimental
+
+      - name: Run Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: auto
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-reports
+          path: reports/
+
+  # ============================================================================
+  # Coverage Report
+  # ============================================================================
+  coverage:
+    name: Coverage Report
+    needs: [unit-tests, integration-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download coverage artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: coverage-reports/
+
+      - name: Merge coverage reports
+        run: |
+          npm install -g nyc
+          nyc merge coverage-reports coverage/coverage-final.json
+
+      - name: Generate coverage report
+        run: |
+          nyc report --reporter=text --reporter=html
+
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/coverage-final.json
+          flags: unittests,integration
+          name: codecov-umbrella
+
+      - name: Comment coverage on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const coverage = fs.readFileSync('coverage/coverage-summary.txt', 'utf8');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `### 📊 Coverage Report\n\n\`\`\`\n${coverage}\n\`\`\``
+            });
+
+  # ============================================================================
+  # Test Summary
+  # ============================================================================
+  test-summary:
+    name: Test Summary
+    if: always()
+    needs: [unit-tests, integration-tests, e2e-tests, performance-tests, security-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check test results
+        run: |
+          if [ "${{ needs.unit-tests.result }}" != "success" ] ||
+             [ "${{ needs.integration-tests.result }}" != "success" ] ||
+             [ "${{ needs.e2e-tests.result }}" != "success" ]; then
+            echo "Tests failed!"
+            exit 1
+          fi
+
+          echo "All tests passed!"
+
+      - name: Notify on failure
+        if: failure() && github.ref == 'refs/heads/main'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: 'failure'
+          text: |
+            ⚠️ Tests failed on main branch!
+            Commit: ${{ github.sha }}
+            Author: ${{ github.actor }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}

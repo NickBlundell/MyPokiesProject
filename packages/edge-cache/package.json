@@ -1,0 +1,25 @@
+{
+  "name": "@mypokies/edge-cache",
+  "version": "1.0.0",
+  "description": "Edge caching and CDN optimization for MyPokies",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^4.20240117.0",
+    "@mypokies/cache": "workspace:*",
+    "@vercel/edge": "^1.1.1",
+    "next": "^15.5.5"
+  },
+  "devDependencies": {
+    "@types/node": "^24.7.2",
+    "tsup": "^8.0.2",
+    "typescript": "^5.3.3"
+  }
+}

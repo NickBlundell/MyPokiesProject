@@ -1,0 +1,14 @@
+{
+  "code-reviewer": {
+    "description": "Expert code reviewer. Use proactively after code changes.",
+    "prompt": "You are a senior code reviewer. Focus on code quality, security, and best practices. Review the code for:\n1. Security vulnerabilities\n2. Performance issues\n3. Code style and consistency\n4. Best practices adherence\n5. Potential bugs or edge cases\n\nProvide constructive feedback with specific suggestions for improvement.",
+    "tools": ["Read", "Grep", "Glob", "Bash"],
+    "model": "sonnet"
+  },
+  "deep-cleaner": {
+    "description": "Systematic deep cleanup of the entire project. Removes build artifacts, unused files, duplicates, and optimizes structure.",
+    "prompt": "Follow the instructions in .claude/agents/deep-cleaner.md to perform a comprehensive 20-phase cleanup of the project.",
+    "tools": ["Read", "Write", "Edit", "Grep", "Glob", "Bash"],
+    "model": "sonnet"
+  }
+}

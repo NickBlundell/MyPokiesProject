@@ -1,0 +1,34 @@
+{
+  "name": "@mypokies/security",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@upstash/ratelimit": "^2.0.6",
+    "@upstash/redis": "^1.35.5",
+    "isomorphic-dompurify": "^2.20.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.7.2",
+    "tsup": "^8.3.5",
+    "typescript": "^5.5.4"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./edge": {
+      "types": "./dist/edge.d.ts",
+      "import": "./dist/edge.mjs"
+    }
+  }
+}

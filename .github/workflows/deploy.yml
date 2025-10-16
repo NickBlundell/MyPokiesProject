@@ -1,0 +1,311 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      app:
+        description: 'Application to deploy'
+        required: true
+        type: choice
+        options:
+          - casino
+          - admin
+          - both
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '8.15.6'
+
+jobs:
+  # ============================================================================
+  # Setup and Build
+  # ============================================================================
+  build:
+    name: Build ${{ github.event.inputs.app }}
+    runs-on: ubuntu-latest
+    outputs:
+      casino-built: ${{ steps.check.outputs.casino }}
+      admin-built: ${{ steps.check.outputs.admin }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Casino
+        if: github.event.inputs.app == 'casino' || github.event.inputs.app == 'both'
+        run: |
+          pnpm turbo build --filter=@mypokies/casino
+          echo "casino=true" >> $GITHUB_OUTPUT
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets[format('NEXT_PUBLIC_SUPABASE_URL_{0}', github.event.inputs.environment)] }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets[format('NEXT_PUBLIC_SUPABASE_ANON_KEY_{0}', github.event.inputs.environment)] }}
+          NEXT_PUBLIC_BASE_URL: ${{ secrets[format('NEXT_PUBLIC_BASE_URL_{0}', github.event.inputs.environment)] }}
+
+      - name: Build Admin
+        if: github.event.inputs.app == 'admin' || github.event.inputs.app == 'both'
+        run: |
+          pnpm turbo build --filter=@mypokies/admin
+          echo "admin=true" >> $GITHUB_OUTPUT
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets[format('NEXT_PUBLIC_SUPABASE_URL_{0}', github.event.inputs.environment)] }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets[format('NEXT_PUBLIC_SUPABASE_ANON_KEY_{0}', github.event.inputs.environment)] }}
+          NEXT_PUBLIC_BASE_URL: ${{ secrets[format('NEXT_PUBLIC_ADMIN_URL_{0}', github.event.inputs.environment)] }}
+
+      - name: Upload Casino build
+        if: steps.check.outputs.casino == 'true'
+        uses: actions/upload-artifact@v3
+        with:
+          name: casino-build-${{ github.event.inputs.environment }}
+          path: apps/casino/.next
+
+      - name: Upload Admin build
+        if: steps.check.outputs.admin == 'true'
+        uses: actions/upload-artifact@v3
+        with:
+          name: admin-build-${{ github.event.inputs.environment }}
+          path: apps/admin/.next
+
+  # ============================================================================
+  # Deploy to Development
+  # ============================================================================
+  deploy-development:
+    name: Deploy to Development
+    if: github.event.inputs.environment == 'development'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: development
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download builds
+        uses: actions/download-artifact@v3
+
+      - name: Deploy to Vercel (Preview)
+        id: deploy
+        run: |
+          npm i -g vercel
+
+          if [[ "${{ github.event.inputs.app }}" == "casino" ]] || [[ "${{ github.event.inputs.app }}" == "both" ]]; then
+            cd apps/casino
+            CASINO_URL=$(vercel deploy --token=${{ secrets.VERCEL_TOKEN }} --scope=${{ secrets.VERCEL_SCOPE }})
+            echo "casino_url=$CASINO_URL" >> $GITHUB_OUTPUT
+            cd ../..
+          fi
+
+          if [[ "${{ github.event.inputs.app }}" == "admin" ]] || [[ "${{ github.event.inputs.app }}" == "both" ]]; then
+            cd apps/admin
+            ADMIN_URL=$(vercel deploy --token=${{ secrets.VERCEL_TOKEN }} --scope=${{ secrets.VERCEL_SCOPE }})
+            echo "admin_url=$ADMIN_URL" >> $GITHUB_OUTPUT
+            cd ../..
+          fi
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID_CASINO: ${{ secrets.VERCEL_CASINO_PROJECT_ID }}
+          VERCEL_PROJECT_ID_ADMIN: ${{ secrets.VERCEL_ADMIN_PROJECT_ID }}
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const casino_url = '${{ steps.deploy.outputs.casino_url }}';
+            const admin_url = '${{ steps.deploy.outputs.admin_url }}';
+
+            let comment = '### 🚀 Deployment Preview\n\n';
+            if (casino_url) comment += `**Casino**: ${casino_url}\n`;
+            if (admin_url) comment += `**Admin**: ${admin_url}\n`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # ============================================================================
+  # Deploy to Staging
+  # ============================================================================
+  deploy-staging:
+    name: Deploy to Staging
+    if: github.event.inputs.environment == 'staging'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: https://staging.mypokies.com
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download builds
+        uses: actions/download-artifact@v3
+
+      - name: Deploy to Vercel (Staging)
+        run: |
+          npm i -g vercel
+
+          if [[ "${{ github.event.inputs.app }}" == "casino" ]] || [[ "${{ github.event.inputs.app }}" == "both" ]]; then
+            cd apps/casino
+            vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} --scope=${{ secrets.VERCEL_SCOPE }}
+            vercel alias set staging-casino.mypokies.com --token=${{ secrets.VERCEL_TOKEN }}
+            cd ../..
+          fi
+
+          if [[ "${{ github.event.inputs.app }}" == "admin" ]] || [[ "${{ github.event.inputs.app }}" == "both" ]]; then
+            cd apps/admin
+            vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} --scope=${{ secrets.VERCEL_SCOPE }}
+            vercel alias set staging-admin.mypokies.com --token=${{ secrets.VERCEL_TOKEN }}
+            cd ../..
+          fi
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID_CASINO: ${{ secrets.VERCEL_CASINO_PROJECT_ID_STAGING }}
+          VERCEL_PROJECT_ID_ADMIN: ${{ secrets.VERCEL_ADMIN_PROJECT_ID_STAGING }}
+
+      - name: Run smoke tests
+        run: |
+          # Run basic smoke tests against staging
+          pnpm turbo test:smoke
+        env:
+          BASE_URL: https://staging-casino.mypokies.com
+          ADMIN_URL: https://staging-admin.mypokies.com
+
+  # ============================================================================
+  # Deploy to Production
+  # ============================================================================
+  deploy-production:
+    name: Deploy to Production
+    if: github.event.inputs.environment == 'production'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://mypokies.com
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download builds
+        uses: actions/download-artifact@v3
+
+      - name: Create backup
+        run: |
+          # Create backup of current production
+          echo "Creating production backup..."
+          # Add backup commands here
+
+      - name: Deploy Casino to Production
+        if: github.event.inputs.app == 'casino' || github.event.inputs.app == 'both'
+        run: |
+          npm i -g vercel
+          cd apps/casino
+          vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} --scope=${{ secrets.VERCEL_SCOPE }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_CASINO_PROJECT_ID_PROD }}
+
+      - name: Deploy Admin to Production
+        if: github.event.inputs.app == 'admin' || github.event.inputs.app == 'both'
+        run: |
+          cd apps/admin
+          vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} --scope=${{ secrets.VERCEL_SCOPE }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_ADMIN_PROJECT_ID_PROD }}
+
+      - name: Deploy Edge Functions
+        run: |
+          # Deploy Supabase Edge Functions
+          supabase functions deploy --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Run migrations
+        run: |
+          # Run production migrations
+          echo "Running production migrations..."
+          # Add migration commands here
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_PROD }}
+
+      - name: Warm cache
+        run: |
+          # Warm CDN cache with critical pages
+          curl -X GET https://mypokies.com/
+          curl -X GET https://mypokies.com/games
+          curl -X GET https://mypokies.com/api/games
+          curl -X GET https://mypokies.com/api/bonuses/available
+
+      - name: Purge old cache
+        run: |
+          # Purge CDN cache
+          echo "Purging CDN cache..."
+          # Add CDN purge commands here
+
+      - name: Health check
+        run: |
+          # Check health endpoints
+          curl -f https://mypokies.com/health || exit 1
+          curl -f https://admin.mypokies.com/health || exit 1
+
+      - name: Notify team
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: |
+            Production deployment completed!
+            Environment: ${{ github.event.inputs.environment }}
+            Application: ${{ github.event.inputs.app }}
+            Deployed by: ${{ github.actor }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        if: always()
+
+  # ============================================================================
+  # Rollback
+  # ============================================================================
+  rollback:
+    name: Rollback if needed
+    if: failure() && github.event.inputs.environment == 'production'
+    needs: deploy-production
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rollback deployment
+        run: |
+          echo "Rolling back deployment..."
+          # Add rollback commands here
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Notify rollback
+        uses: 8398a7/action-slack@v3
+        with:
+          status: 'failure'
+          text: |
+            ⚠️ Production deployment rolled back!
+            Environment: ${{ github.event.inputs.environment }}
+            Application: ${{ github.event.inputs.app }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}

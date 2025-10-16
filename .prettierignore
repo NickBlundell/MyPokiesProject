@@ -1,0 +1,15 @@
+# Ignore artifacts
+build
+coverage
+dist
+.next
+.turbo
+node_modules
+pnpm-lock.yaml
+
+# Ignore all minified JavaScript files
+*.min.js
+
+# Ignore generated files
+*.generated.*
+**/generated/**

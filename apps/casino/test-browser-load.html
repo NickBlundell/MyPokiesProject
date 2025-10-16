@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casino App Browser Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #0a0f14;
+            color: #fff;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-left: 4px solid #4CAF50;
+            background: #1a2024;
+        }
+        .error {
+            border-left-color: #f44336;
+        }
+        .warning {
+            border-left-color: #ff9800;
+        }
+        #results {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #2a3439;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Casino App Browser Load Test</h1>
+    <div id="results"></div>
+    <h2>Live Preview (iframe)</h2>
+    <iframe id="appFrame" src="http://localhost:3000"></iframe>
+
+    <script>
+        const results = document.getElementById('results');
+        const appFrame = document.getElementById('appFrame');
+
+        function log(message, type = 'status') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            results.appendChild(div);
+        }
+
+        // Test 1: Check if server is responding
+        log('TEST 1: Checking server connection...', 'status');
+        fetch('http://localhost:3000')
+            .then(response => {
+                log(`✓ Server responded with HTTP ${response.status}`, 'status');
+                return response.text();
+            })
+            .then(html => {
+                log(`✓ Received ${html.length} bytes of HTML`, 'status');
+                if (html.includes('BAILOUT_TO_CLIENT_SIDE_RENDERING')) {
+                    log('✓ Found expected bailout marker (this is normal)', 'status');
+                }
+            })
+            .catch(err => {
+                log(`✗ Server connection failed: ${err.message}`, 'error');
+            });
+
+        // Test 2: Check JavaScript chunks
+        log('\nTEST 2: Checking JavaScript chunks...', 'status');
+        const chunks = [
+            '/_next/static/chunks/webpack.js',
+            '/_next/static/chunks/main-app.js',
+            '/_next/static/chunks/app/page.js',
+            '/_next/static/css/app/layout.css'
+        ];
+
+        chunks.forEach(chunk => {
+            fetch(`http://localhost:3000${chunk}`)
+                .then(response => {
+                    if (response.ok) {
+                        log(`✓ ${chunk} loaded successfully`, 'status');
+                    } else {
+                        log(`✗ ${chunk} failed with HTTP ${response.status}`, 'error');
+                    }
+                })
+                .catch(err => {
+                    log(`✗ ${chunk} failed: ${err.message}`, 'error');
+                });
+        });
+
+        // Test 3: Check Supabase API
+        log('\nTEST 3: Checking Supabase API...', 'status');
+        fetch('https://hupruyttzgeytlysobar.supabase.co/rest/v1/games?is_active=eq.true&limit=1', {
+            headers: {
+                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh1cHJ1eXR0emdleXRseXNvYmFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MDg4NDYsImV4cCI6MjA3NTM4NDg0Nn0.NHm2yWGoE5pAibttO-u5isxkRCow-g4kULYuiT3XxQw',
+                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh1cHJ1eXR0emdleXRseXNvYmFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MDg4NDYsImV4cCI6MjA3NTM4NDg0Nn0.NHm2yWGoE5pAibttO-u5isxkRCow-g4kULYuiT3XxQw'
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (Array.isArray(data) && data.length > 0) {
+                    log(`✓ Supabase API working - found ${data.length} game(s)`, 'status');
+                } else {
+                    log('⚠ Supabase API returned empty array', 'warning');
+                }
+            })
+            .catch(err => {
+                log(`✗ Supabase API failed: ${err.message}`, 'error');
+            });
+
+        // Test 4: Monitor iframe console
+        log('\nTEST 4: Monitoring iframe load...', 'status');
+
+        appFrame.onload = () => {
+            log('✓ Iframe loaded', 'status');
+
+            // Try to check iframe content
+            try {
+                const iframeDoc = appFrame.contentDocument || appFrame.contentWindow.document;
+                const bodyText = iframeDoc.body ? iframeDoc.body.innerText.substring(0, 100) : 'No body';
+                log(`Iframe body preview: ${bodyText}`, 'status');
+
+                // Check for visible elements
+                const hasHeader = iframeDoc.querySelector('header') !== null;
+                const hasSidebar = iframeDoc.querySelector('[class*="sidebar"]') !== null;
+                const hasMain = iframeDoc.querySelector('main') !== null;
+
+                log(`✓ DOM Elements - Header: ${hasHeader}, Sidebar: ${hasSidebar}, Main: ${hasMain}`, 'status');
+            } catch (err) {
+                log(`⚠ Cannot access iframe content (CORS): ${err.message}`, 'warning');
+            }
+        };
+
+        appFrame.onerror = (err) => {
+            log(`✗ Iframe error: ${err}`, 'error');
+        };
+
+        // Capture console errors from the main page
+        window.addEventListener('error', (event) => {
+            log(`✗ JavaScript Error: ${event.message} at ${event.filename}:${event.lineno}`, 'error');
+        });
+
+        window.addEventListener('unhandledrejection', (event) => {
+            log(`✗ Unhandled Promise Rejection: ${event.reason}`, 'error');
+        });
+
+        log('\nWaiting for all tests to complete...', 'status');
+        log('Check the iframe below to see what actually renders.', 'status');
+    </script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+name: Scheduled Data Archival
+
+on:
+  schedule:
+    # Run every Sunday at 2:00 AM UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch: # Allow manual trigger from GitHub Actions UI
+
+jobs:
+  archive-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Archive Old Data
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            "${{ secrets.SUPABASE_URL }}/functions/v1/scheduled-archival" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Content-Type: application/json")
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "Response Code: $http_code"
+          echo "Response Body:"
+          echo "$body" | jq '.' || echo "$body"
+
+          if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+            echo "✅ Archival completed successfully"
+            exit 0
+          else
+            echo "❌ Archival failed with status $http_code"
+            exit 1
+          fi
+
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          echo "Data archival failed. Check the logs above for details."
+          # Add notification logic here (Slack, email, etc.)
