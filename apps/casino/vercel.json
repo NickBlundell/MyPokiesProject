@@ -1,4 +1,7 @@
 {
-  "buildCommand": "cd ../.. && npx turbo build --filter=@mypokies/casino",
-  "installCommand": "cd ../.. && pnpm install --frozen-lockfile"
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "pnpm turbo build --filter=@mypokies/casino",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "framework": "nextjs",
+  "outputDirectory": ".next"
 }
