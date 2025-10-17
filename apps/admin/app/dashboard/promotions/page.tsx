@@ -82,7 +82,7 @@ async function getPromotionTemplates() {
       }
 
       if (promo.vip_tiers && promo.vip_tiers.length > 0) {
-        targetingDisplay.push(...promo.vip_tiers.map(tier => `VIP: ${tier}`))
+        targetingDisplay.push(...promo.vip_tiers.map((tier: string) => `VIP: ${tier}`))
       }
 
       if (promo.segment_ids && promo.segment_ids.length > 0) {
