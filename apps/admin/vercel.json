@@ -2,6 +2,6 @@
   "github": {
     "silent": true
   },
-  "buildCommand": "cd ../.. && pnpm install && pnpm turbo build --filter=@mypokies/admin",
-  "installCommand": "pnpm install --filter @mypokies/admin..."
+  "buildCommand": "cd ../.. && pnpm turbo build --filter=@mypokies/admin",
+  "installCommand": "cd ../.. && pnpm install"
 }
