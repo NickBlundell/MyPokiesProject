@@ -59,21 +59,27 @@ const navigation: NavItem[] = [
     ]
   },
   {
-    label: 'Promotions & Bonuses',
+    label: 'Promotions',
     href: '/dashboard/promotions',
     icon: Gift,
-    badge: '7',
     children: [
       {
-        label: 'All Promotions',
+        label: 'Templates',
         href: '/dashboard/promotions',
-        icon: Calendar
-      },
-      {
-        label: 'Bonus Offers',
-        href: '/dashboard/bonuses',
         icon: Gift
       },
+      {
+        label: 'Active Offers',
+        href: '/dashboard/promotions/active-offers',
+        icon: Clock
+      }
+    ]
+  },
+  {
+    label: 'Legacy Bonuses',
+    href: '/dashboard/bonuses',
+    icon: Calendar,
+    children: [
       {
         label: 'Assign Bonus',
         href: '/dashboard/bonuses/assign',
