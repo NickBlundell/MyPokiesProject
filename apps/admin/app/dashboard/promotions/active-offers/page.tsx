@@ -35,10 +35,10 @@ async function getActiveOffers() {
       .from('triggered_promotions')
       .select(`
         *,
-        promotion_templates!promotion_id (
+        promotion_templates (
           name
         ),
-        users!user_id (
+        users (
           email,
           phone
         )
