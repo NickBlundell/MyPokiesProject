@@ -1,12 +1,25 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
-import { ipWhitelistMiddleware, rateLimitMiddleware } from '@mypokies/security/edge'
+import { rateLimitMiddleware } from '@mypokies/security/edge'
 import { edgeLogger as logger } from '@mypokies/monitoring/edge'
 
+// Helper to get client IP for logging
+function getClientIP(request: NextRequest): string {
+  const forwarded = request.headers.get('x-forwarded-for')
+  const realIp = request.headers.get('x-real-ip')
+  const cfConnectingIp = request.headers.get('cf-connecting-ip')
+
+  if (forwarded) return forwarded.split(',')[0].trim()
+  if (cfConnectingIp) return cfConnectingIp
+  if (realIp) return realIp
+
+  return 'unknown'
+}
+
 export async function middleware(request: NextRequest) {
-  // DEVELOPMENT BYPASS: Skip authentication and IP checks in development mode
-  if (process.env.NODE_ENV === 'development' && !process.env.ENFORCE_IP_WHITELIST) {
+  // DEVELOPMENT BYPASS: Skip authentication in development mode
+  if (process.env.NODE_ENV === 'development') {
     return NextResponse.next({
       request: {
         headers: request.headers,
@@ -14,25 +27,7 @@ export async function middleware(request: NextRequest) {
     })
   }
 
-  // IP Whitelisting for Admin Access
-  const { allowed, ip, reason } = await ipWhitelistMiddleware(request as unknown as Request)
-
-  if (!allowed) {
-    logger.warn(`Admin access blocked: ${reason}`, {
-      event: 'admin_access_blocked',
-      ip,
-      path: request.nextUrl.pathname,
-      timestamp: new Date().toISOString(),
-      userAgent: request.headers.get('user-agent'),
-    })
-
-    return new NextResponse('Access Denied', {
-      status: 403,
-      headers: {
-        'Content-Type': 'text/plain',
-      },
-    })
-  }
+  const ip = getClientIP(request)
 
   // Rate Limiting for Admin Panel
   const { success, headers: rateLimitHeaders } = await rateLimitMiddleware(
@@ -41,7 +36,7 @@ export async function middleware(request: NextRequest) {
   )
 
   if (!success) {
-    logger.warn(`Admin rate limit exceeded for IP: ${ip}`, {
+    logger.warn(`Admin rate limit exceeded`, {
       event: 'admin_rate_limit_exceeded',
       ip,
       path: request.nextUrl.pathname,
