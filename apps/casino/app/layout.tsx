@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import { ThemeProvider } from "next-themes";
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import { AuthProvider } from "@/lib/contexts/auth-context";
+import { AuthModalProvider } from "@/lib/contexts/auth-modal-context";
 import { SidebarProvider } from "@/lib/contexts/sidebar-context";
 import { AppProvider } from "@/lib/contexts/app-context";
 import { PlayerProvider } from "@/lib/contexts/player-context";
@@ -169,19 +170,21 @@ export default function RootLayout({
           <ServiceWorkerProvider />
           <NuqsAdapter>
             <AuthProvider>
-              <SidebarProvider>
-                <AppProvider>
-                  <PlayerProvider>
-                    <JackpotAnimationProvider>
-                      <InitialLoaderWrapper>
-                        <ClientLayoutWrapper>
-                          {children}
-                        </ClientLayoutWrapper>
-                      </InitialLoaderWrapper>
-                    </JackpotAnimationProvider>
-                  </PlayerProvider>
-                </AppProvider>
-              </SidebarProvider>
+              <AuthModalProvider>
+                <SidebarProvider>
+                  <AppProvider>
+                    <PlayerProvider>
+                      <JackpotAnimationProvider>
+                        <InitialLoaderWrapper>
+                          <ClientLayoutWrapper>
+                            {children}
+                          </ClientLayoutWrapper>
+                        </InitialLoaderWrapper>
+                      </JackpotAnimationProvider>
+                    </PlayerProvider>
+                  </AppProvider>
+                </SidebarProvider>
+              </AuthModalProvider>
             </AuthProvider>
           </NuqsAdapter>
         </ThemeProvider>

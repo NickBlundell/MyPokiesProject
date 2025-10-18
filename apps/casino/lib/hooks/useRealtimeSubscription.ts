@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/lib/contexts/auth-context'
 import type { RealtimeChannel, RealtimePostgresChangesPayload, REALTIME_SUBSCRIBE_STATES } from '@supabase/supabase-js'
-import { logDebug, logError, logInfo } from '@/lib/utils/client-logger'
+import { logDebug, logError, logInfo } from '@mypokies/monitoring/client'
 
 interface UseRealtimeSubscriptionConfig<T, TRow extends { [key: string]: any } = any> {
   /** Table name to subscribe to */

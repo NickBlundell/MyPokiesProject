@@ -2,7 +2,7 @@ import React from 'react'
 import { Gift, Activity, CheckCircle } from 'lucide-react'
 import type { TabProps, Bonus } from '../types'
 
-export function BonusesTab({ player }: TabProps) {
+export function BonusesTab({ player: _player }: TabProps) {
   // Mock bonuses - will be replaced with real data
   const mockBonuses: Bonus[] = []
 

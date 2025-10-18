@@ -43,7 +43,7 @@ const DialogOverlay = React.forwardRef<
         inset: 0,
       }}
       className={cn(
-        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in bg-black/80 z-[9998]",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in bg-black/95 backdrop-blur-md z-[9998]",
         className
       )}
       {...props}
@@ -81,16 +81,21 @@ function DialogContent({
         )}
         {...props}
       >
-        {children}
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            className="absolute top-4 right-4 z-50 text-gray-400 hover:text-white transition-colors focus:outline-none disabled:pointer-events-none"
+            style={{
+              position: 'absolute',
+              top: '1rem',
+              right: '1rem',
+              zIndex: 100,
+            }}
+            className="text-gray-400 hover:text-white transition-colors focus:outline-none disabled:pointer-events-none"
           >
             <XIcon className="w-6 h-6" />
-            <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
         )}
+        {children}
       </DialogPrimitive.Content>
     </DialogPortal>
   )

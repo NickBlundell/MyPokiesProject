@@ -213,7 +213,7 @@ export default function GameCatalogOptimized({ title, category, showNew, showJac
 
   return (
     <>
-      <div className="relative bg-black/30 backdrop-blur-sm py-8 flex-1">
+      <div className="relative py-6 md:py-10 flex-1 overflow-visible">
         <div className="max-w-[1400px] mx-auto px-6 md:px-8">
           {/* Page Header */}
           <div className="mb-8">

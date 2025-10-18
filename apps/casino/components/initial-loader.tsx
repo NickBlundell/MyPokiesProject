@@ -1,18 +1,30 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import Image from 'next/image'
+import { useEffect, useState, useRef } from 'react'
 
 export function InitialLoader() {
   const [show, setShow] = useState(true)
+  const [fadeOut, setFadeOut] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
-    // Hide loader after 2 seconds
-    const timer = setTimeout(() => {
-      setShow(false)
-    }, 2000)
+    const video = videoRef.current
+    if (!video) return
 
-    return () => clearTimeout(timer)
+    // Hide loader when video ends
+    const handleVideoEnd = () => {
+      setFadeOut(true)
+      // Wait for fade out animation to complete
+      setTimeout(() => {
+        setShow(false)
+      }, 500)
+    }
+
+    video.addEventListener('ended', handleVideoEnd)
+
+    return () => {
+      video.removeEventListener('ended', handleVideoEnd)
+    }
   }, [])
 
   if (!show) {
@@ -21,46 +33,20 @@ export function InitialLoader() {
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] bg-[#0a0f14] flex items-center justify-center transition-opacity duration-500 ${
-        show ? 'opacity-100' : 'opacity-0'
+      className={`fixed inset-0 z-[9999] bg-black flex items-center justify-center transition-opacity duration-500 ${
+        fadeOut ? 'opacity-0' : 'opacity-100'
       }`}
     >
-      <div className="flex flex-col items-center justify-center gap-6">
-        {/* Logo */}
-        <div className="relative w-64 h-24 mb-4">
-          <Image
-            src="/logo.webp"
-            alt="MyPokies"
-            fill
-            className="object-contain"
-            priority
-          />
-        </div>
-
-        {/* Spinner */}
-        <div className="relative w-16 h-16">
-          <div className="w-16 h-16 border-4 border-[#1a2439] rounded-full"></div>
-          <div
-            className="absolute top-0 left-0 w-16 h-16 border-4 border-transparent border-t-yellow-400 border-r-yellow-400 border-b-yellow-400 rounded-full"
-            style={{
-              animation: 'spin 1s linear infinite'
-            }}
-          ></div>
-        </div>
-        <style jsx>{`
-          @keyframes spin {
-            from {
-              transform: rotate(0deg);
-            }
-            to {
-              transform: rotate(360deg);
-            }
-          }
-        `}</style>
-
-        {/* Loading text */}
-        <p className="text-gray-400 text-sm animate-pulse">Loading MyPokies...</p>
-      </div>
+      <video
+        ref={videoRef}
+        autoPlay
+        muted
+        playsInline
+        className="max-w-sm w-full px-4"
+        style={{ maxHeight: '30vh' }}
+      >
+        <source src="/loading-video.mp4" type="video/mp4" />
+      </video>
     </div>
   )
 }

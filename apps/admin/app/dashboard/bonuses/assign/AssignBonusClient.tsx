@@ -47,13 +47,14 @@ export default function AssignBonusClient({ bonusOffers, recentAssignments }: As
   const [playerSearch, setPlayerSearch] = useState('')
   const [searchResults, setSearchResults] = useState<Array<{ id: string, email?: string, external_user_id?: string }>>([])
 
-  const supabase = createClient()
-
   const searchPlayers = async () => {
     if (!playerSearch.trim()) {
       setSearchResults([])
       return
     }
+
+    // Create client inside the handler to avoid SSR issues
+    const supabase = createClient()
 
     const { data, error } = await supabase
       .from('users')
@@ -86,6 +87,9 @@ export default function AssignBonusClient({ bonusOffers, recentAssignments }: As
     setMessage(null)
 
     try {
+      // Create client inside the handler to avoid SSR issues
+      const supabase = createClient()
+
       // Try to insert into player_bonuses or bonus_assignments table
       const possibleTables = ['player_bonuses', 'bonus_assignments', 'bonus_claims']
 

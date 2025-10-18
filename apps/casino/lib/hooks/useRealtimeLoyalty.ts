@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/lib/contexts/auth-context'
 import type { RealtimeChannel, REALTIME_SUBSCRIBE_STATES } from '@supabase/supabase-js'
 import type { PlayerTierInfo } from '@/types/loyalty'
-import { logWarn, logError, logInfo } from '@/lib/utils/client-logger'
+import { logWarn, logError, logInfo } from '@mypokies/monitoring/client'
 
 /**
  * Real-time hook for player's loyalty status

@@ -2,7 +2,7 @@ import React from 'react'
 import { DollarSign, CheckCircle, Clock } from 'lucide-react'
 import type { TabProps, Transaction } from '../types'
 
-export function TransactionsTab({ player }: TabProps) {
+export function TransactionsTab({ player: _player }: TabProps) {
   // Mock transactions - will be replaced with real data
   const mockTransactions: Transaction[] = []
 

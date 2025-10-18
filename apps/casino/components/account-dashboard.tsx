@@ -4,7 +4,7 @@ import { Star, Ticket, Clock, Gift, ChevronRight } from 'lucide-react'
 import { usePlayerLoyalty, usePlayerTickets, usePlayerBonuses } from '@/lib/contexts/player-context'
 import { useState, useRef, useEffect, memo } from 'react'
 import Link from 'next/link'
-import { logError } from '@/lib/utils/client-logger'
+import { logError } from '@mypokies/monitoring/client'
 
 interface AccountDashboardProps {
   userName?: string

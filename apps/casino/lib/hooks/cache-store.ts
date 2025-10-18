@@ -1,6 +1,6 @@
 'use client'
 
-import { logError } from '@/lib/utils/client-logger'
+import { logError } from '@mypokies/monitoring/client'
 
 interface CacheEntry<T> {
   data: T

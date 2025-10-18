@@ -7,7 +7,7 @@ import type { Balance } from '@/types/player'
 import type { PlayerTierInfo } from '@/types/loyalty'
 import type { PlayerBonus } from '@/types/bonus'
 import type { JackpotTicket } from '@/types/jackpot'
-import { logError, logInfo } from '@/lib/utils/client-logger'
+import { logError, logInfo } from '@mypokies/monitoring/client'
 import { useAuth } from './auth-context'
 
 interface BalanceTableRow {
@@ -313,15 +313,15 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
           if (payload.eventType === 'INSERT') {
             const newTicket = payload.new as JackpotTicket
             setTickets(prev => [...prev, newTicket])
-            setTicketCount(prev => prev + 1)
-            // Recalculate odds locally (this is an approximation)
-            // For more accurate odds, we'd need total pool tickets count
-            // But this provides immediate feedback without API call
-            setTicketOdds(prev => {
-              const newCount = ticketCount + 1
+            setTicketCount(prev => {
+              const newCount = prev + 1
+              // Recalculate odds locally (this is an approximation)
+              // For more accurate odds, we'd need total pool tickets count
+              // But this provides immediate feedback without API call
               // Assuming average pool has ~1000 tickets (can be adjusted based on actual data)
               const estimatedPoolSize = 1000
-              return (newCount / estimatedPoolSize) * 100
+              setTicketOdds((newCount / estimatedPoolSize) * 100)
+              return newCount
             })
           }
         }

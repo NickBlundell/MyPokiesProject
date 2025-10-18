@@ -15,6 +15,7 @@
     "@lucide/lab": "^0.1.2",
     "@mypokies/monitoring": "workspace:*",
     "@mypokies/security": "workspace:*",
+    "@mypokies/supabase-client": "workspace:*",
     "@mypokies/ui": "workspace:*",
     "@radix-ui/react-checkbox": "^1.3.1",
     "@radix-ui/react-dialog": "^1.1.15",
@@ -22,8 +23,9 @@
     "@radix-ui/react-label": "^2.1.6",
     "@radix-ui/react-slot": "^1.2.2",
     "@sentry/nextjs": "^10.19.0",
-    "@supabase/ssr": "latest",
-    "@supabase/supabase-js": "latest",
+    "@supabase/ssr": "^0.7.0",
+    "@supabase/supabase-js": "^2.75.0",
+    "@types/three": "^0.180.0",
     "@upstash/ratelimit": "^2.0.6",
     "@upstash/redis": "^1.35.5",
     "class-variance-authority": "^0.7.1",
@@ -38,6 +40,7 @@
     "react-dom": "^18.3.1",
     "swr": "^2.3.6",
     "tailwind-merge": "^3.3.0",
+    "three": "^0.180.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {

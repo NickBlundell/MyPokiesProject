@@ -15,6 +15,10 @@
     "./edge": {
       "types": "./dist/edge.d.ts",
       "import": "./dist/edge.mjs"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/client.mjs"
     }
   },
   "scripts": {

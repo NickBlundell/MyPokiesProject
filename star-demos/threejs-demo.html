@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js Star Demo - 3D Realistic</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: #000000;
+            min-height: 100vh;
+        }
+
+        /* Fixed gradient background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #000000 0%, #000000 25%, #0a1628 100%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 300px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+
+        .controls h2 {
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #22d3ee;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+        }
+
+        .value-display {
+            display: inline-block;
+            margin-left: 10px;
+            color: #22d3ee;
+            font-weight: bold;
+        }
+
+        .info {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .info h3 {
+            color: #22d3ee;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .info p {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+
+        .fps {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 15px;
+            border-radius: 8px;
+            color: #22d3ee;
+            font-weight: bold;
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .tip {
+            position: fixed;
+            top: 70px;
+            left: 20px;
+            background: rgba(34, 211, 238, 0.2);
+            padding: 10px 15px;
+            border-radius: 8px;
+            color: #22d3ee;
+            font-size: 12px;
+            z-index: 10;
+            border: 1px solid rgba(34, 211, 238, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="fps">FPS: <span id="fps">60</span></div>
+    <div class="tip">💡 Scroll down to see the 3D parallax effect!</div>
+
+    <!-- Add scrollable content to test the effect -->
+    <div style="position: relative; z-index: 5; height: 3000px; pointer-events: none;">
+        <div style="position: sticky; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white; font-size: 24px; text-shadow: 0 0 10px rgba(0,0,0,0.8); pointer-events: none;">
+            <p style="margin-bottom: 20px;">Scroll down to see the stars move!</p>
+            <p style="font-size: 48px;">⬇️</p>
+        </div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <div class="controls">
+        <h2>⚙️ Three.js Settings</h2>
+
+        <div class="control-group">
+            <label>Star Count: <span class="value-display" id="count-value">5000</span></label>
+            <input type="range" id="count" min="1000" max="20000" value="5000" step="1000">
+        </div>
+
+        <div class="control-group">
+            <label>Star Size: <span class="value-display" id="size-value">2</span></label>
+            <input type="range" id="size" min="0.5" max="5" value="2" step="0.5">
+        </div>
+
+        <div class="control-group">
+            <label>Spread Radius: <span class="value-display" id="radius-value">100</span></label>
+            <input type="range" id="radius" min="50" max="200" value="100" step="10">
+        </div>
+
+        <div class="control-group">
+            <label>Depth: <span class="value-display" id="depth-value">50</span></label>
+            <input type="range" id="depth" min="10" max="100" value="50" step="5">
+        </div>
+
+        <div class="control-group">
+            <label>Parallax Intensity: <span class="value-display" id="parallax-value">0.5</span></label>
+            <input type="range" id="parallax" min="0" max="2" value="0.5" step="0.1">
+        </div>
+
+        <hr style="border: 1px solid rgba(255, 255, 255, 0.1); margin: 15px 0;">
+
+        <h3 style="color: #22d3ee; font-size: 14px; margin-bottom: 10px;">⭐ Star Appearance</h3>
+
+        <div class="control-group">
+            <label>Glow Softness: <span class="value-display" id="glow-softness-value">0.15</span></label>
+            <input type="range" id="glow-softness" min="0.05" max="0.6" value="0.15" step="0.05">
+        </div>
+
+        <div class="control-group">
+            <label>Glow Blur: <span class="value-display" id="glow-fade-value">0.08</span></label>
+            <input type="range" id="glow-fade" min="0.02" max="0.5" value="0.08" step="0.02">
+        </div>
+
+        <div class="control-group">
+            <label>Concave Amount: <span class="value-display" id="concave-value">0.2</span></label>
+            <input type="range" id="concave" min="0" max="0.4" value="0.2" step="0.05">
+        </div>
+
+        <div class="control-group">
+            <label>Corner Sharpness: <span class="value-display" id="corner-sharp-value">0.15</span></label>
+            <input type="range" id="corner-sharp" min="0" max="0.3" value="0.15" step="0.05">
+        </div>
+
+        <div class="control-group">
+            <label>Center Size: <span class="value-display" id="center-size-value">0.45</span></label>
+            <input type="range" id="center-size" min="0.1" max="0.6" value="0.45" step="0.05">
+        </div>
+
+        <div class="control-group">
+            <label>Breathe Speed: <span class="value-display" id="breathe-speed-value">2</span></label>
+            <input type="range" id="breathe-speed" min="0.5" max="5" value="2" step="0.5">
+        </div>
+
+        <div class="control-group">
+            <label>Breathe Amount: <span class="value-display" id="breathe-amount-value">0.8</span></label>
+            <input type="range" id="breathe-amount" min="0.2" max="1.5" value="0.8" step="0.1">
+        </div>
+
+        <hr style="border: 1px solid rgba(255, 255, 255, 0.1); margin: 15px 0;">
+
+        <div class="control-group">
+            <label>🌠 Shooting Stars: <span class="value-display" id="shooting-enabled-value">ON</span></label>
+            <input type="checkbox" id="shooting-enabled" checked style="width: auto;">
+        </div>
+
+        <div class="control-group">
+            <label>Frequency: <span class="value-display" id="frequency-value">2</span>s</label>
+            <input type="range" id="frequency" min="1" max="10" value="2" step="0.5">
+        </div>
+
+        <div class="control-group">
+            <label>Speed: <span class="value-display" id="shooting-speed-value">1</span></label>
+            <input type="range" id="shooting-speed" min="0.1" max="5" value="1" step="0.1">
+        </div>
+
+        <hr style="border: 1px solid rgba(255, 255, 255, 0.1); margin: 15px 0;">
+
+        <h3 style="color: #22d3ee; font-size: 14px; margin-bottom: 10px;">⭐ Final Star Appearance</h3>
+
+        <div class="control-group">
+            <label>Star Size: <span class="value-display" id="final-star-size-value">20</span></label>
+            <input type="range" id="final-star-size" min="5" max="50" value="20" step="5">
+        </div>
+
+        <div class="control-group">
+            <label>Glow Softness: <span class="value-display" id="final-glow-softness-value">0.15</span></label>
+            <input type="range" id="final-glow-softness" min="0.05" max="0.6" value="0.15" step="0.05">
+        </div>
+
+        <div class="control-group">
+            <label>Glow Blur: <span class="value-display" id="final-glow-blur-value">0.08</span></label>
+            <input type="range" id="final-glow-blur" min="0.02" max="0.5" value="0.08" step="0.02">
+        </div>
+
+        <div class="control-group">
+            <label>Concave Amount: <span class="value-display" id="final-concave-value">0.2</span></label>
+            <input type="range" id="final-concave" min="0" max="0.4" value="0.2" step="0.05">
+        </div>
+
+        <div class="control-group">
+            <label>Corner Sharpness: <span class="value-display" id="final-corner-sharp-value">0.15</span></label>
+            <input type="range" id="final-corner-sharp" min="0" max="0.3" value="0.15" step="0.05">
+        </div>
+
+        <div class="control-group">
+            <label>Center Size: <span class="value-display" id="final-center-size-value">0.45</span></label>
+            <input type="range" id="final-center-size" min="0.1" max="0.6" value="0.45" step="0.05">
+        </div>
+
+        <div class="control-group">
+            <label>Disappear Speed: <span class="value-display" id="final-breathe-speed-value">1.5</span>s</label>
+            <input type="range" id="final-breathe-speed" min="0.5" max="3" value="1.5" step="0.1">
+        </div>
+
+        <hr style="border: 1px solid rgba(255, 255, 255, 0.1); margin: 15px 0;">
+
+        <button id="copy-settings" style="width: 100%; padding: 10px; background: rgba(34, 211, 238, 0.2); border: 1px solid rgba(34, 211, 238, 0.5); border-radius: 5px; color: #22d3ee; font-weight: bold; cursor: pointer; font-size: 14px;">
+            📋 Copy All Settings
+        </button>
+    </div>
+
+    <div class="info">
+        <h3>✨ Three.js 3D</h3>
+        <p>✅ True 3D depth</p>
+        <p>✅ GPU accelerated</p>
+        <p>✅ Parallax scrolling</p>
+        <p>✅ Shooting stars 🌠</p>
+        <p>✅ Very realistic</p>
+        <p>⚠️ Larger bundle (~150KB)</p>
+        <p>⚠️ More complex setup</p>
+    </div>
+
+    <!-- Load Three.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        let scene, camera, renderer, stars, starMaterial, circleStars, circleStarMaterial;
+        let scrollY = 0;
+        let targetX = 0, targetY = 0;
+
+        let lastTime = performance.now();
+        let frameCount = 0;
+
+        // Shooting stars
+        let shootingStars = [];
+        let lastShootingStarTime = 0;
+
+        // Final star settings (separate from background stars)
+        let finalStarSettings = {
+            size: 20,
+            glowSoftness: 0.15,
+            glowBlur: 0.08,
+            concaveAmount: 0.2,
+            cornerSharpness: 0.15,
+            centerSize: 0.45,
+            breatheInSpeed: 1.5 // Speed for breathing in/disappearing
+        };
+
+        class ShootingStar {
+            constructor() {
+                // Random horizontal direction (left to right or right to left)
+                const direction = Math.random() > 0.5 ? 1 : -1;
+
+                // Start from left or right edge depending on direction
+                const xPos = direction > 0 ? -120 : 120;
+
+                // Start low on screen (coming from behind user)
+                const yPos = -40 + Math.random() * 20; // Start low: -40 to -20
+
+                // Start close to camera (behind user perspective)
+                const zPos = -20 - Math.random() * 10; // Close: -20 to -30
+
+                this.startPosition = new THREE.Vector3(xPos, yPos, zPos);
+                this.position = this.startPosition.clone();
+
+                // Random stopping position (higher up, further away, more random)
+                this.stopX = (Math.random() - 0.5) * 140; // Random X between -70 and 70 (more random)
+                this.stopY = 15 + Math.random() * 45;      // Higher: 15 to 60 (more range)
+                this.stopZ = -50 - Math.random() * 40;     // Further: -50 to -90 (more range)
+                this.endPosition = new THREE.Vector3(this.stopX, this.stopY, this.stopZ);
+
+                // Create curve with two control points for more control
+                // First control point: early in the path, high curve
+                const control1X = this.startPosition.x + (this.endPosition.x - this.startPosition.x) * 0.25;
+                const control1Y = this.startPosition.y + (this.endPosition.y - this.startPosition.y) * 0.25;
+                const control1Z = this.startPosition.z + (this.endPosition.z - this.startPosition.z) * 0.25;
+
+                // Add strong curve at the start (40 to 100 units)
+                const curveAmount1 = 40 + Math.random() * 60;
+                this.controlPoint1 = new THREE.Vector3(
+                    control1X,
+                    control1Y + curveAmount1, // Strong upward arc at start
+                    control1Z - curveAmount1 * 0.5 // Arc backward
+                );
+
+                // Second control point: later in the path, minimal curve (more linear)
+                const control2X = this.startPosition.x + (this.endPosition.x - this.startPosition.x) * 0.75;
+                const control2Y = this.startPosition.y + (this.endPosition.y - this.startPosition.y) * 0.75;
+                const control2Z = this.startPosition.z + (this.endPosition.z - this.startPosition.z) * 0.75;
+
+                // Add minimal curve at the end (10 to 20 units - much less)
+                const curveAmount2 = 10 + Math.random() * 10;
+                this.controlPoint2 = new THREE.Vector3(
+                    control2X,
+                    control2Y + curveAmount2, // Minimal upward arc at end (more linear)
+                    control2Z - curveAmount2 * 0.5
+                );
+
+                // Create cubic bezier curve (4 points: start, control1, control2, end)
+                this.curve = new THREE.CubicBezierCurve3(
+                    this.startPosition,
+                    this.controlPoint1,
+                    this.controlPoint2,
+                    this.endPosition
+                );
+
+                // Progress along the curve (0 to 1)
+                this.curveProgress = 0;
+                this.curveSpeed = 0.008; // Speed of travel along curve
+
+                // Calculate initial velocity direction
+                const tangent = this.curve.getTangent(0);
+                this.velocity = tangent.multiplyScalar(8);
+
+                this.hasReachedStop = false;
+
+                // Phases: 'moving', 'stopping', 'transforming', 'breathing', 'dead'
+                this.phase = 'moving';
+                this.phaseTime = 0;
+
+                this.life = 1.0;
+                this.fadeSpeed = 0.008;
+                this.trailLength = 15; // Length of the line trail
+
+                // Create a clean line trail using a thin cylinder/tube
+                // Taper: thick at head (top), thin at tail (bottom)
+                const trailGeometry = new THREE.CylinderGeometry(0.3, 0.1, this.trailLength, 8);
+
+                // Shader material with opacity gradient (high at back, low at front)
+                const trailMaterial = new THREE.ShaderMaterial({
+                    uniforms: {
+                        color: { value: new THREE.Color(0xffffc7) },
+                        trailLength: { value: this.trailLength },
+                        globalAlpha: { value: 1.0 }
+                    },
+                    vertexShader: `
+                        varying float vOpacity;
+                        uniform float trailLength;
+                        uniform float globalAlpha;
+
+                        void main() {
+                            // Calculate opacity based on Y position
+                            // Y goes from -trailLength/2 (back) to +trailLength/2 (head)
+                            // We want opacity 1.0 at back, 0.2 at head
+                            float normalizedY = (position.y + trailLength * 0.5) / trailLength;
+                            vOpacity = (1.0 - (normalizedY * 0.8)) * globalAlpha; // 1.0 at back, 0.2 at head, multiplied by global alpha
+
+                            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                        }
+                    `,
+                    fragmentShader: `
+                        uniform vec3 color;
+                        varying float vOpacity;
+
+                        void main() {
+                            gl_FragColor = vec4(color, vOpacity);
+                        }
+                    `,
+                    transparent: true,
+                    blending: THREE.AdditiveBlending,
+                    depthWrite: false
+                });
+
+                this.line = new THREE.Mesh(trailGeometry, trailMaterial);
+                this.line.position.copy(this.position);
+                scene.add(this.line);
+
+                // Create second stream (blue stream) - thin cylinder, slightly offset
+                // Taper: thick at head (top), thin at tail (bottom)
+                const blueTrailGeometry = new THREE.CylinderGeometry(0.35, 0.12, this.trailLength, 8);
+
+                // Shader material with opacity gradient (high at back, low at front)
+                const blueTrailMaterial = new THREE.ShaderMaterial({
+                    uniforms: {
+                        color: { value: new THREE.Color(0x66b3ff) },
+                        trailLength: { value: this.trailLength },
+                        baseOpacity: { value: 0.8 },
+                        globalAlpha: { value: 1.0 }
+                    },
+                    vertexShader: `
+                        varying float vOpacity;
+                        uniform float trailLength;
+                        uniform float baseOpacity;
+                        uniform float globalAlpha;
+
+                        void main() {
+                            // Calculate opacity based on Y position
+                            // Y goes from -trailLength/2 (back) to +trailLength/2 (head)
+                            // We want opacity baseOpacity at back, baseOpacity*0.2 at head
+                            float normalizedY = (position.y + trailLength * 0.5) / trailLength;
+                            vOpacity = baseOpacity * (1.0 - (normalizedY * 0.8)) * globalAlpha; // 0.8 at back, 0.16 at head, multiplied by global alpha
+
+                            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                        }
+                    `,
+                    fragmentShader: `
+                        uniform vec3 color;
+                        varying float vOpacity;
+
+                        void main() {
+                            gl_FragColor = vec4(color, vOpacity);
+                        }
+                    `,
+                    transparent: true,
+                    blending: THREE.AdditiveBlending,
+                    depthWrite: false
+                });
+
+                this.blueStream = new THREE.Mesh(blueTrailGeometry, blueTrailMaterial);
+                this.blueStream.position.copy(this.position);
+                scene.add(this.blueStream);
+
+                // Create star shape at head
+                const starShape = new THREE.Shape();
+                const outerRadius = 0.15; // Much smaller
+                const innerRadius = 0.06;
+                const spikes = 5;
+
+                for (let i = 0; i < spikes * 2; i++) {
+                    const radius = i % 2 === 0 ? outerRadius : innerRadius;
+                    const angle = (i * Math.PI) / spikes;
+                    const x = Math.cos(angle) * radius;
+                    const y = Math.sin(angle) * radius;
+                    if (i === 0) {
+                        starShape.moveTo(x, y);
+                    } else {
+                        starShape.lineTo(x, y);
+                    }
+                }
+                starShape.closePath();
+
+                const glowGeometry = new THREE.ShapeGeometry(starShape);
+                const glowMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xffffff, // White
+                    transparent: true,
+                    opacity: 1.0,
+                    side: THREE.DoubleSide
+                });
+                this.glow = new THREE.Mesh(glowGeometry, glowMaterial);
+                this.glow.position.copy(this.position);
+                scene.add(this.glow);
+
+                // Create a background-style star for the transform phase (initially hidden)
+                const starGeometry = new THREE.BufferGeometry();
+                const starPos = [0, 0, 0];
+                const starColors = [1.0, 1.0, 1.0]; // White
+                const starSizes = [finalStarSettings.size];
+
+                starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
+                starGeometry.setAttribute('color', new THREE.Float32BufferAttribute(starColors, 3));
+                starGeometry.setAttribute('size', new THREE.Float32BufferAttribute(starSizes, 1));
+
+                // Create separate uniforms for the final star (not shared with background stars)
+                // Always render as SQUARE shape
+                this.staticStarMaterial = new THREE.ShaderMaterial({
+                    uniforms: {
+                        time: { value: 0 },
+                        glowSoftness: { value: finalStarSettings.glowSoftness },
+                        glowFade: { value: finalStarSettings.glowBlur },
+                        concaveAmount: { value: finalStarSettings.concaveAmount },
+                        cornerSharpness: { value: finalStarSettings.cornerSharpness },
+                        centerSize: { value: finalStarSettings.centerSize },
+                        breatheSpeed: { value: 2.0 },
+                        breatheAmount: { value: 0.8 },
+                        customAlpha: { value: 0.0 }, // Start invisible
+                        customSize: { value: 1.0 }   // Size multiplier for breathing in
+                    },
+                    vertexShader: `
+                        attribute float size;
+                        attribute vec3 color;
+                        varying vec3 vColor;
+                        varying float vAlpha;
+                        uniform float time;
+                        uniform float customAlpha;
+                        uniform float customSize;
+
+                        void main() {
+                            vColor = color;
+                            vAlpha = customAlpha; // Use custom alpha instead of breathing
+                            vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                            gl_PointSize = size * customSize * (300.0 / -mvPosition.z);
+                            gl_Position = projectionMatrix * mvPosition;
+                        }
+                    `,
+                    fragmentShader: `
+                        varying vec3 vColor;
+                        varying float vAlpha;
+                        uniform float glowSoftness;
+                        uniform float glowFade;
+                        uniform float concaveAmount;
+                        uniform float cornerSharpness;
+                        uniform float centerSize;
+
+                        void main() {
+                            vec2 p = gl_PointCoord - vec2(0.5);
+
+                            // ALWAYS SQUARE - no random shape selection
+                            float baseSize = 0.25;
+                            float cornerDist = max(abs(p.x), abs(p.y));
+                            float sideDist = min(abs(p.x), abs(p.y));
+                            float side = baseSize + cornerSharpness * (cornerDist / (cornerDist + 0.1));
+
+                            float top = p.y - side + concaveAmount * (1.0 - abs(p.x / side));
+                            float bottom = -p.y - side + concaveAmount * (1.0 - abs(p.x / side));
+                            float right = p.x - side + concaveAmount * (1.0 - abs(p.y / side));
+                            float left = -p.x - side + concaveAmount * (1.0 - abs(p.y / side));
+
+                            float d = max(max(top, bottom), max(left, right));
+
+                            float shape = 1.0 - smoothstep(-glowSoftness, glowSoftness, d);
+                            shape = pow(shape, glowFade);
+
+                            float dist = length(p);
+                            float yellowCenter = 1.0 - smoothstep(0.1, centerSize, dist);
+
+                            vec3 white = vec3(1.0, 1.0, 1.0);
+                            vec3 blue = vec3(0.34, 0.88, 1.0);
+                            vec3 color = mix(blue, white, pow(yellowCenter, 0.5));
+
+                            float alpha = shape * vAlpha;
+                            gl_FragColor = vec4(color, alpha);
+                        }
+                    `,
+                    transparent: true,
+                    depthWrite: false,
+                    blending: THREE.AdditiveBlending
+                });
+
+                this.staticStar = new THREE.Points(starGeometry, this.staticStarMaterial);
+                this.staticStar.position.copy(this.position);
+                this.staticStar.visible = false; // Hidden initially
+                scene.add(this.staticStar);
+            }
+
+            update(speedMultiplier) {
+                this.phaseTime += 0.016; // ~60fps
+
+                // Phase 1: Moving - travel along curve
+                if (this.phase === 'moving') {
+                    // Move along the curve
+                    this.curveProgress += this.curveSpeed * speedMultiplier;
+
+                    // Check if reached end of curve (trigger transformation a bit early at 0.85)
+                    if (this.curveProgress >= 0.85) {
+                        this.curveProgress = 0.85;
+                        this.phase = 'stopping';
+                        this.phaseTime = 0;
+                    }
+
+                    // Update position along curve
+                    this.position.copy(this.curve.getPoint(this.curveProgress));
+
+                    // Update velocity to match tangent of curve (for trail direction)
+                    const tangent = this.curve.getTangent(this.curveProgress);
+                    this.velocity = tangent.multiplyScalar(8);
+
+                    // Scale the glow star at the head (gets smaller as it travels)
+                    // Scale from 1.0 to 0 (completely gone) by the time we reach stopping point (0.85)
+                    const glowScale = Math.max(0, 1.0 - (this.curveProgress / 0.85));
+                    this.glow.scale.set(glowScale, glowScale, glowScale);
+                }
+
+                // Phase 2: Stopping - already at end position, just wait briefly
+                else if (this.phase === 'stopping') {
+                    const stopDuration = 0.3; // 0.3 seconds pause at end
+                    const progress = Math.min(this.phaseTime / stopDuration, 1.0);
+
+                    if (progress >= 1.0) {
+                        this.phase = 'transforming';
+                        this.phaseTime = 0;
+                    }
+                }
+
+                // Phase 3: Transforming - hide shooting star, show static star
+                else if (this.phase === 'transforming') {
+                    const transformDuration = 0.3; // 0.3 seconds
+                    const progress = Math.min(this.phaseTime / transformDuration, 1.0);
+
+                    // Fade out shooting star elements
+                    const shootingAlpha = 1.0 - progress;
+                    // Update shader uniform for yellow trail
+                    this.line.material.uniforms.globalAlpha.value = shootingAlpha;
+                    // Update shader uniform for blue trail
+                    this.blueStream.material.uniforms.globalAlpha.value = shootingAlpha;
+                    this.glow.material.opacity = shootingAlpha;
+
+                    // Fade in static star
+                    this.staticStar.visible = true;
+                    this.staticStarMaterial.uniforms.customAlpha.value = progress;
+
+                    if (progress >= 1.0) {
+                        // Hide shooting star elements completely
+                        this.glow.visible = false;
+                        this.line.visible = false;
+                        this.blueStream.visible = false;
+
+                        this.phase = 'breathing';
+                        this.phaseTime = 0;
+                    }
+                }
+
+                // Phase 4: Breathing - star breathes inward and fades out
+                else if (this.phase === 'breathing') {
+                    const breatheDuration = finalStarSettings.breatheInSpeed; // Use custom speed
+                    const progress = Math.min(this.phaseTime / breatheDuration, 1.0);
+
+                    // Breathe inward (shrink)
+                    const size = 1.0 - progress; // Goes from 1.0 to 0.0
+                    this.staticStarMaterial.uniforms.customSize.value = size;
+
+                    // Fade out
+                    const alpha = 1.0 - progress;
+                    this.staticStarMaterial.uniforms.customAlpha.value = alpha;
+
+                    if (progress >= 1.0) {
+                        this.phase = 'dead';
+                        return false; // Remove this shooting star
+                    }
+                }
+
+                // Update glow position (only in moving phase) - slight offset upward
+                if (this.phase === 'moving') {
+                    this.glow.position.copy(this.position);
+                    this.glow.position.y += 0.075; // Small upward offset to center between trails
+                }
+
+                // Update static star position
+                this.staticStar.position.copy(this.position);
+
+                // Only update trails during moving phase
+                if (this.phase === 'moving') {
+                    // Position the trail cylinder along the velocity direction
+                    const velocityNorm = this.velocity.clone().normalize();
+
+                    // Get current scale (trail gets shorter as we progress)
+                    // Scale from 1.0 to 0 (completely gone) by the time we reach stopping point (0.85)
+                    const scale = 1.0 - (this.curveProgress / 0.85);
+                    const currentTrailLength = this.trailLength * Math.max(0, scale);
+
+                    // Position trail at midpoint (half current trail length back from current position)
+                    const trailMidpoint = this.position.clone().sub(velocityNorm.clone().multiplyScalar(currentTrailLength / 2));
+                    this.line.position.copy(trailMidpoint);
+
+                    // Scale the trail length
+                    this.line.scale.set(scale, scale, scale);
+
+                    // Rotate trail to align with velocity direction
+                    // Cylinders point along Y axis by default, so we need to align Y with velocity
+                    const up = new THREE.Vector3(0, 1, 0);
+                    const quaternion = new THREE.Quaternion();
+                    quaternion.setFromUnitVectors(up, velocityNorm);
+                    this.line.setRotationFromQuaternion(quaternion);
+
+                    // Position blue trail with small offset (closer together)
+                    const offsetPos = new THREE.Vector3(0, 0.15, 0);
+                    const blueTrailMidpoint = trailMidpoint.clone().add(offsetPos);
+                    this.blueStream.position.copy(blueTrailMidpoint);
+                    this.blueStream.scale.set(scale, scale, scale);
+                    this.blueStream.setRotationFromQuaternion(quaternion);
+                }
+
+                return true; // Keep alive
+            }
+
+            destroy() {
+                scene.remove(this.line);
+                scene.remove(this.blueStream);
+                scene.remove(this.glow);
+                scene.remove(this.staticStar);
+                this.line.geometry.dispose();
+                this.line.material.dispose();
+                this.blueStream.geometry.dispose();
+                this.blueStream.material.dispose();
+                this.glow.geometry.dispose();
+                this.glow.material.dispose();
+                this.staticStar.geometry.dispose();
+                this.staticStarMaterial.dispose();
+            }
+        }
+
+        function spawnShootingStar() {
+            if (document.getElementById('shooting-enabled').checked) {
+                shootingStars.push(new ShootingStar());
+            }
+        }
+
+        // FPS counter
+        function updateFPS() {
+            frameCount++;
+            const currentTime = performance.now();
+            if (currentTime >= lastTime + 1000) {
+                document.getElementById('fps').textContent = frameCount;
+                frameCount = 0;
+                lastTime = currentTime;
+            }
+        }
+
+        function init() {
+            // Scene
+            scene = new THREE.Scene();
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 50;
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // Create stars
+            createStars();
+            createCircleStars();
+
+            // Scroll listener for parallax effect
+            window.addEventListener('scroll', onScroll, false);
+
+            // Window resize
+            window.addEventListener('resize', onWindowResize, false);
+
+            // Start animation
+            animate();
+        }
+
+        function onScroll() {
+            scrollY = window.scrollY;
+        }
+
+        function createStars() {
+            if (stars) {
+                scene.remove(stars);
+            }
+
+            const count = parseInt(document.getElementById('count').value);
+            const size = parseFloat(document.getElementById('size').value);
+            const radius = parseFloat(document.getElementById('radius').value);
+            const depth = parseFloat(document.getElementById('depth').value);
+
+            const geometry = new THREE.BufferGeometry();
+            const positions = [];
+            const colors = [];
+            const sizes = [];
+
+            for (let i = 0; i < count; i++) {
+                // Distribute stars with gradient density: most at top, 0% at 75% down page
+                // X: Random position across full width (wider spread)
+                const x = (Math.random() - 0.5) * radius * 3; // 3x wider spread
+
+                // Y: Gradient distribution - starts at 75% down page (0% density) to top (100% density)
+                // Bottom at -45 (75% down), Top at 60
+                // Use power function to create gradient: 0% density at bottom, 100% at top
+                const densityBias = 1.0 - Math.pow(Math.random(), 1.5); // Inverted - more at top, less at bottom
+                const y = -45 + (densityBias * 105); // Bottom (-45) to top (60)
+
+                // Z: Random depth (wider range)
+                const z = -Math.random() * depth * 1.5;
+
+                positions.push(x, y, z);
+
+                // Mix of star colors: some yellow with white inside, some white with blue
+                const starType = Math.random();
+                const brightness = 0.85 + Math.random() * 0.15;
+
+                if (starType < 0.3) {
+                    // Yellow stars with white inside (30% of stars)
+                    colors.push(1.0 * brightness, 0.95 * brightness, 0.4 * brightness); // Yellow
+                } else {
+                    // White/blue stars (70% of stars)
+                    colors.push(0.99 * brightness, 1.0 * brightness, 0.52 * brightness); // Light yellow-white
+                }
+
+                // Random size with variation
+                sizes.push(size * (0.5 + Math.random() * 1.5));
+            }
+
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+
+            // Simple star material - completely new approach
+            starMaterial = new THREE.ShaderMaterial({
+                uniforms: {
+                    time: { value: 0 },
+                    glowSoftness: { value: 0.15 },
+                    glowFade: { value: 0.08 },
+                    concaveAmount: { value: 0.2 },
+                    cornerSharpness: { value: 0.15 },
+                    centerSize: { value: 0.45 },
+                    breatheSpeed: { value: 2.0 },
+                    breatheAmount: { value: 0.8 }
+                },
+                vertexShader: `
+                    attribute float size;
+                    attribute vec3 color;
+                    varying vec3 vColor;
+                    varying float vAlpha;
+                    uniform float time;
+                    uniform float breatheSpeed;
+                    uniform float breatheAmount;
+
+                    void main() {
+                        vColor = color;
+
+                        // Breathing effect - size pulsates
+                        float breathe = sin(time * breatheSpeed + position.x * 100.0) * 0.5 + 0.5; // 0 to 1
+
+                        // Size multiplier: ranges from 0.6 (small) to (0.6 + breatheAmount) (large)
+                        float sizeMultiplier = 0.6 + breathe * breatheAmount;
+
+                        // Opacity: inversely related - when small (breathe = 0), opacity is high
+                        // When large (breathe = 1), opacity is lower
+                        vAlpha = 1.0 - (breathe * 0.5); // 1.0 when smallest, 0.5 when largest
+
+                        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                        gl_PointSize = size * sizeMultiplier * (300.0 / -mvPosition.z);
+                        gl_Position = projectionMatrix * mvPosition;
+                    }
+                `,
+                fragmentShader: `
+                    varying vec3 vColor;
+                    varying float vAlpha;
+                    uniform float glowSoftness;
+                    uniform float glowFade;
+                    uniform float concaveAmount;
+                    uniform float cornerSharpness;
+                    uniform float centerSize;
+
+                    void main() {
+                        vec2 p = gl_PointCoord - vec2(0.5);
+
+                        // Use color to determine shape (pseudo-random per star)
+                        float shapeRandom = fract(vColor.r * 12.9898 + vColor.g * 78.233);
+
+                        // 33% hexagon, 33% pentagon, 33% square (circles are separate now)
+                        bool isHexagon = shapeRandom < 0.33;
+                        bool isPentagon = shapeRandom >= 0.33 && shapeRandom < 0.66;
+
+                        float d;
+
+                        if (isHexagon) {
+                            // Hexagon with sharper pointed corners and concave sides
+                            float angle = atan(p.y, p.x);
+                            float dist = length(p);
+
+                            // Create 6-pointed shape with sharper corners
+                            float sideAngle = mod(angle + 3.14159, 1.0472) - 0.5236; // 60 degree sections
+                            float sideDist = abs(sideAngle);
+
+                            // Sharper hexagon - extend the points outward
+                            float baseRadius = 0.25; // Smaller base
+                            float cornerSharp = 1.0 - (sideDist / 0.5236); // 1 at corners, 0 at sides
+
+                            // Base radius plus extension at corners for sharp points
+                            float hexRadius = baseRadius + (cornerSharpness * pow(cornerSharp, 2.0));
+
+                            // Apply concave curve on sides (not at corners)
+                            float concave = concaveAmount * 0.6 * (1.0 - cos(sideDist * 6.0)); // 0.6 factor for hexagons
+                            float radiusAtAngle = hexRadius - concave;
+
+                            d = dist - radiusAtAngle;
+                        } else if (isPentagon) {
+                            // Pentagon with sharper pointed corners and concave sides
+                            float angle = atan(p.y, p.x);
+                            float dist = length(p);
+
+                            // Create 5-pointed shape with sharper corners
+                            float sideAngle = mod(angle + 3.14159, 1.25664) - 0.62832; // 72 degree sections (360/5)
+                            float sideDist = abs(sideAngle);
+
+                            // Sharper pentagon - extend the points outward
+                            float baseRadius = 0.25;
+                            float cornerSharp = 1.0 - (sideDist / 0.62832); // 1 at corners, 0 at sides
+
+                            // Base radius plus extension at corners for sharp points
+                            float pentRadius = baseRadius + (cornerSharpness * pow(cornerSharp, 2.0));
+
+                            // Apply concave curve on sides (not at corners)
+                            float concave = concaveAmount * 0.6 * (1.0 - cos(sideDist * 5.0));
+                            float radiusAtAngle = pentRadius - concave;
+
+                            d = dist - radiusAtAngle;
+                        } else {
+                            // Square with sharper pointed corners and concave sides
+                            float baseSize = 0.25; // Smaller base for sharper corners
+
+                            // Calculate distance from corners to make them extend further
+                            float cornerDist = max(abs(p.x), abs(p.y));
+                            float sideDist = min(abs(p.x), abs(p.y));
+
+                            // Make corners sharper by extending them
+                            float side = baseSize + cornerSharpness * (cornerDist / (cornerDist + 0.1));
+
+                            // Top side - curve down
+                            float top = p.y - side + concaveAmount * (1.0 - abs(p.x / side));
+
+                            // Bottom side - curve up
+                            float bottom = -p.y - side + concaveAmount * (1.0 - abs(p.x / side));
+
+                            // Right side - curve left
+                            float right = p.x - side + concaveAmount * (1.0 - abs(p.y / side));
+
+                            // Left side - curve right
+                            float left = -p.x - side + concaveAmount * (1.0 - abs(p.y / side));
+
+                            // Combine all sides
+                            d = max(max(top, bottom), max(left, right));
+                        }
+
+                        // Create shape with blurred glow edges
+                        float shape = 1.0 - smoothstep(-glowSoftness, glowSoftness, d);
+                        shape = pow(shape, glowFade); // Blur amount (lower = more blur)
+
+                        // White center
+                        float dist = length(p);
+                        float yellowCenter = 1.0 - smoothstep(0.1, centerSize, dist);
+
+                        // Colors - determine if yellow or blue based on star color
+                        vec3 white = vec3(1.0, 1.0, 1.0); // White center
+
+                        vec3 outerColor;
+                        // Yellow stars have more yellow in their color (check if it's a yellow star)
+                        bool isYellowStar = vColor.r > 0.98 && vColor.g > 0.9 && vColor.b < 0.6;
+
+                        if (isYellowStar) {
+                            outerColor = vec3(1.0, 0.85, 0.3); // Yellow/orange glow
+                        } else {
+                            outerColor = vec3(0.34, 0.88, 1.0); // Blue glow
+                        }
+
+                        // Mix: white in center, colored glow outside - sharper transition for more opaque white
+                        vec3 color = mix(outerColor, white, pow(yellowCenter, 0.5));
+
+                        float alpha = shape * vAlpha;
+
+                        gl_FragColor = vec4(color, alpha);
+                    }
+                `,
+                transparent: true,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending
+            });
+
+            stars = new THREE.Points(geometry, starMaterial);
+            scene.add(stars);
+        }
+
+        function createCircleStars() {
+            if (circleStars) {
+                scene.remove(circleStars);
+            }
+
+            const count = Math.floor(parseInt(document.getElementById('count').value) * 0.25); // 25% circles
+            const size = parseFloat(document.getElementById('size').value);
+            const radius = parseFloat(document.getElementById('radius').value);
+            const depth = parseFloat(document.getElementById('depth').value);
+
+            const geometry = new THREE.BufferGeometry();
+            const positions = [];
+            const colors = [];
+            const sizes = [];
+            const phases = []; // Store individual phase offset for each circle
+
+            for (let i = 0; i < count; i++) {
+                // Same distribution as other stars
+                const x = (Math.random() - 0.5) * radius * 3;
+                const densityBias = 1.0 - Math.pow(Math.random(), 1.5);
+                const y = -45 + (densityBias * 105);
+                const z = -Math.random() * depth * 1.5;
+
+                positions.push(x, y, z);
+
+                // Pure white for circles
+                colors.push(1.0, 1.0, 1.0);
+
+                // Random size with variation
+                sizes.push(size * (0.5 + Math.random() * 1.5));
+
+                // Random phase offset for breathing (0 to 2π)
+                phases.push(Math.random() * Math.PI * 2);
+            }
+
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+            geometry.setAttribute('phase', new THREE.Float32BufferAttribute(phases, 1));
+
+            // Circle star material with continuous breathing (0 to 1 and back)
+            circleStarMaterial = new THREE.ShaderMaterial({
+                uniforms: {
+                    time: { value: 0 },
+                    breatheSpeed: { value: 2.0 }
+                },
+                vertexShader: `
+                    attribute float size;
+                    attribute vec3 color;
+                    attribute float phase;
+                    varying vec3 vColor;
+                    varying float vAlpha;
+                    uniform float time;
+                    uniform float breatheSpeed;
+
+                    void main() {
+                        vColor = color;
+
+                        // Continuous breathing from 0 to 1 and back
+                        float breathe = abs(sin(time * breatheSpeed + phase)); // 0 to 1 and back to 0
+
+                        // Size goes from 0 (completely disappeared) to 1.0 (full size)
+                        float sizeMultiplier = breathe;
+
+                        // Opacity follows size (disappears when size is 0)
+                        vAlpha = breathe;
+
+                        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                        gl_PointSize = size * sizeMultiplier * (300.0 / -mvPosition.z);
+                        gl_Position = projectionMatrix * mvPosition;
+                    }
+                `,
+                fragmentShader: `
+                    varying vec3 vColor;
+                    varying float vAlpha;
+
+                    void main() {
+                        vec2 p = gl_PointCoord - vec2(0.5);
+
+                        // Simple circle with enhanced glow
+                        float dist = length(p);
+                        float circleRadius = 0.25;
+
+                        // Create stronger glow with multiple layers
+                        float core = 1.0 - smoothstep(0.0, circleRadius * 0.5, dist); // Bright core
+                        float middle = 1.0 - smoothstep(circleRadius * 0.5, circleRadius, dist); // Middle ring
+                        float glow = 1.0 - smoothstep(circleRadius, circleRadius * 2.0, dist); // Outer glow
+
+                        // Combine layers for stronger glow effect
+                        float shape = core + middle * 0.6 + glow * 0.3;
+
+                        // Pure white color
+                        vec3 white = vec3(1.0, 1.0, 1.0);
+
+                        float alpha = shape * vAlpha;
+
+                        gl_FragColor = vec4(white, alpha);
+                    }
+                `,
+                transparent: true,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending
+            });
+
+            circleStars = new THREE.Points(geometry, circleStarMaterial);
+            scene.add(circleStars);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            updateFPS();
+
+            // Smooth camera movement based on scroll (parallax effect)
+            const parallaxIntensity = parseFloat(document.getElementById('parallax').value);
+
+            // Convert scroll position to camera movement
+            // Scroll down = camera moves up (revealing stars from bottom)
+            targetY = (scrollY / 1000) * parallaxIntensity * 20;
+
+            // Slight horizontal drift based on scroll
+            targetX = Math.sin(scrollY / 500) * parallaxIntensity * 5;
+
+            camera.position.x += (targetX - camera.position.x) * 0.05;
+            camera.position.y += (targetY - camera.position.y) * 0.05;
+            camera.lookAt(scene.position);
+
+            // Update twinkling (no rotation)
+            if (stars) {
+                // Update time for twinkling
+                starMaterial.uniforms.time.value += 0.016;
+            }
+            if (circleStars) {
+                // Update time for breathing animation
+                circleStarMaterial.uniforms.time.value += 0.016;
+            }
+
+            // Shooting stars
+            const currentTime = Date.now();
+            const frequency = parseFloat(document.getElementById('frequency').value) * 1000;
+
+            if (currentTime - lastShootingStarTime > frequency) {
+                spawnShootingStar();
+                lastShootingStarTime = currentTime;
+            }
+
+            // Update shooting stars
+            const shootingSpeed = parseFloat(document.getElementById('shooting-speed').value);
+            shootingStars = shootingStars.filter(star => {
+                const alive = star.update(shootingSpeed);
+                if (!alive) {
+                    star.destroy();
+                }
+                return alive;
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        // Initialize
+        init();
+
+        // Control handlers
+        document.getElementById('count').addEventListener('input', (e) => {
+            document.getElementById('count-value').textContent = e.target.value;
+            createStars();
+            createCircleStars();
+        });
+
+        document.getElementById('size').addEventListener('input', (e) => {
+            document.getElementById('size-value').textContent = e.target.value;
+            createStars();
+            createCircleStars();
+        });
+
+        document.getElementById('radius').addEventListener('input', (e) => {
+            document.getElementById('radius-value').textContent = e.target.value;
+            createStars();
+            createCircleStars();
+        });
+
+        document.getElementById('depth').addEventListener('input', (e) => {
+            document.getElementById('depth-value').textContent = e.target.value;
+            createStars();
+            createCircleStars();
+        });
+
+        document.getElementById('parallax').addEventListener('input', (e) => {
+            document.getElementById('parallax-value').textContent = e.target.value;
+        });
+
+        document.getElementById('shooting-enabled').addEventListener('change', (e) => {
+            document.getElementById('shooting-enabled-value').textContent = e.target.checked ? 'ON' : 'OFF';
+        });
+
+        document.getElementById('frequency').addEventListener('input', (e) => {
+            document.getElementById('frequency-value').textContent = e.target.value;
+        });
+
+        document.getElementById('shooting-speed').addEventListener('input', (e) => {
+            document.getElementById('shooting-speed-value').textContent = e.target.value;
+        });
+
+        // Star appearance controls
+        document.getElementById('glow-softness').addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value);
+            document.getElementById('glow-softness-value').textContent = value;
+            if (starMaterial) starMaterial.uniforms.glowSoftness.value = value;
+        });
+
+        document.getElementById('glow-fade').addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value);
+            document.getElementById('glow-fade-value').textContent = value;
+            if (starMaterial) starMaterial.uniforms.glowFade.value = value;
+        });
+
+        document.getElementById('concave').addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value);
+            document.getElementById('concave-value').textContent = value;
+            if (starMaterial) starMaterial.uniforms.concaveAmount.value = value;
+        });
+
+        document.getElementById('corner-sharp').addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value);
+            document.getElementById('corner-sharp-value').textContent = value;
+            if (starMaterial) starMaterial.uniforms.cornerSharpness.value = value;
+        });
+
+        document.getElementById('center-size').addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value);
+            document.getElementById('center-size-value').textContent = value;
+            if (starMaterial) starMaterial.uniforms.centerSize.value = value;
+        });
+
+        document.getElementById('breathe-speed').addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value);
+            document.getElementById('breathe-speed-value').textContent = value;
+            if (starMaterial) starMaterial.uniforms.breatheSpeed.value = value;
+        });
+
+        document.getElementById('breathe-amount').addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value);
+            document.getElementById('breathe-amount-value').textContent = value;
+            if (starMaterial) starMaterial.uniforms.breatheAmount.value = value;
+        });
+
+        // Final star appearance controls
+        document.getElementById('final-star-size').addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value);
+            document.getElementById('final-star-size-value').textContent = value;
+            finalStarSettings.size = value;
+            // Update existing shooting stars' static stars
+            shootingStars.forEach(star => {
+                if (star.staticStar) {
+                    star.staticStar.geometry.attributes.size.array[0] = value;
+                    star.staticStar.geometry.attributes.size.needsUpdate = true;
+                }
+            });
+        });
+
+        document.getElementById('final-glow-softness').addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value);
+            document.getElementById('final-glow-softness-value').textContent = value;
+            finalStarSettings.glowSoftness = value;
+            shootingStars.forEach(star => {
+                if (star.staticStarMaterial) {
+                    star.staticStarMaterial.uniforms.glowSoftness.value = value;
+                }
+            });
+        });
+
+        document.getElementById('final-glow-blur').addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value);
+            document.getElementById('final-glow-blur-value').textContent = value;
+            finalStarSettings.glowBlur = value;
+            shootingStars.forEach(star => {
+                if (star.staticStarMaterial) {
+                    star.staticStarMaterial.uniforms.glowFade.value = value;
+                }
+            });
+        });
+
+        document.getElementById('final-concave').addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value);
+            document.getElementById('final-concave-value').textContent = value;
+            finalStarSettings.concaveAmount = value;
+            shootingStars.forEach(star => {
+                if (star.staticStarMaterial) {
+                    star.staticStarMaterial.uniforms.concaveAmount.value = value;
+                }
+            });
+        });
+
+        document.getElementById('final-corner-sharp').addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value);
+            document.getElementById('final-corner-sharp-value').textContent = value;
+            finalStarSettings.cornerSharpness = value;
+            shootingStars.forEach(star => {
+                if (star.staticStarMaterial) {
+                    star.staticStarMaterial.uniforms.cornerSharpness.value = value;
+                }
+            });
+        });
+
+        document.getElementById('final-center-size').addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value);
+            document.getElementById('final-center-size-value').textContent = value;
+            finalStarSettings.centerSize = value;
+            shootingStars.forEach(star => {
+                if (star.staticStarMaterial) {
+                    star.staticStarMaterial.uniforms.centerSize.value = value;
+                }
+            });
+        });
+
+        document.getElementById('final-breathe-speed').addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value);
+            document.getElementById('final-breathe-speed-value').textContent = value;
+            finalStarSettings.breatheInSpeed = value;
+        });
+
+        // Copy settings button
+        document.getElementById('copy-settings').addEventListener('click', () => {
+            const settings = {
+                stars: {
+                    count: parseInt(document.getElementById('count').value),
+                    size: parseFloat(document.getElementById('size').value),
+                    spreadRadius: parseFloat(document.getElementById('radius').value),
+                    depth: parseFloat(document.getElementById('depth').value),
+                    parallaxIntensity: parseFloat(document.getElementById('parallax').value),
+                    glowSoftness: parseFloat(document.getElementById('glow-softness').value),
+                    glowBlur: parseFloat(document.getElementById('glow-fade').value),
+                    concaveAmount: parseFloat(document.getElementById('concave').value),
+                    cornerSharpness: parseFloat(document.getElementById('corner-sharp').value),
+                    centerSize: parseFloat(document.getElementById('center-size').value),
+                    breatheSpeed: parseFloat(document.getElementById('breathe-speed').value),
+                    breatheAmount: parseFloat(document.getElementById('breathe-amount').value)
+                },
+                shootingStars: {
+                    enabled: document.getElementById('shooting-enabled').checked,
+                    frequency: parseFloat(document.getElementById('frequency').value),
+                    speed: parseFloat(document.getElementById('shooting-speed').value)
+                },
+                finalStar: {
+                    size: parseFloat(document.getElementById('final-star-size').value),
+                    glowSoftness: parseFloat(document.getElementById('final-glow-softness').value),
+                    glowBlur: parseFloat(document.getElementById('final-glow-blur').value),
+                    concaveAmount: parseFloat(document.getElementById('final-concave').value),
+                    cornerSharpness: parseFloat(document.getElementById('final-corner-sharp').value),
+                    centerSize: parseFloat(document.getElementById('final-center-size').value),
+                    disappearSpeed: parseFloat(document.getElementById('final-breathe-speed').value)
+                }
+            };
+
+            const settingsText = JSON.stringify(settings, null, 2);
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(settingsText).then(() => {
+                const button = document.getElementById('copy-settings');
+                const originalText = button.textContent;
+                button.textContent = '✅ Copied!';
+                button.style.background = 'rgba(34, 211, 123, 0.2)';
+                button.style.borderColor = 'rgba(34, 211, 123, 0.5)';
+                button.style.color = '#22d377';
+
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = 'rgba(34, 211, 238, 0.2)';
+                    button.style.borderColor = 'rgba(34, 211, 238, 0.5)';
+                    button.style.color = '#22d3ee';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy settings:', err);
+                alert('Failed to copy settings to clipboard');
+            });
+        });
+    </script>
+</body>
+</html>

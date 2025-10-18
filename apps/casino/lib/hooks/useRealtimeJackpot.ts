@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { RealtimeChannel, REALTIME_SUBSCRIBE_STATES } from '@supabase/supabase-js'
 import type { CurrentJackpotInfo } from '@/types/jackpot'
-import { logWarn, logError, logInfo } from '@/lib/utils/client-logger'
+import { logWarn, logError, logInfo } from '@mypokies/monitoring/client'
 
 /**
  * Real-time hook for jackpot pool updates

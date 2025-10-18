@@ -17,7 +17,7 @@ const StakeHeader = dynamic(() => import('@/components/stake-header'), {
   loading: () => <div className="fixed top-0 left-0 right-0 z-40 h-20 bg-[#1a2024] animate-pulse" />
 })
 
-const FixedBackground = dynamic(() => import('@/components/fixed-background'), {
+const StarfieldBackground = dynamic(() => import('@/components/starfield-background'), {
   ssr: false,
   loading: () => <div className="fixed inset-0 bg-[#0a0f14]" />
 })
@@ -32,9 +32,9 @@ export function ClientLayoutWrapper({ children }: ClientLayoutWrapperProps) {
 
   return (
     <div className="min-h-screen relative overflow-visible">
-      {/* Fixed Background - persists across navigations */}
+      {/* Starfield Background - persists across navigations */}
       <Suspense fallback={<div className="fixed inset-0 bg-[#0a0f14]" />}>
-        <FixedBackground />
+        <StarfieldBackground />
       </Suspense>
 
       {/* Header - persists across navigations */}

@@ -2,7 +2,7 @@ import React from 'react'
 import { DollarSign, TrendingUp, TrendingDown, Activity } from 'lucide-react'
 import type { TabProps, PnLData } from '../types'
 
-export function PnLAnalysisTab({ player }: TabProps) {
+export function PnLAnalysisTab({ player: _player }: TabProps) {
   // Data will be loaded from actual player data in the future
   const mockPnLData: PnLData = {
     totalWagered: 0,

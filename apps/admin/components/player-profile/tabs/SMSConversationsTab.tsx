@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { MessageSquare, Bot, Send } from 'lucide-react'
 import type { TabProps, Conversation } from '../types'
 
-export function SMSConversationsTab({ player }: TabProps) {
+export function SMSConversationsTab({ player: _player }: TabProps) {
   const [messageInput, setMessageInput] = useState('')
 
   // Mock conversations - will be replaced with real data

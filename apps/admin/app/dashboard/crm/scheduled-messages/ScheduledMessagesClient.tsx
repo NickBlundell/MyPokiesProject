@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { logDebug } from '@/lib/utils/client-logger'
+import { logDebug } from '@mypokies/monitoring/client'
 import {
   MessageSquare,
   Clock,

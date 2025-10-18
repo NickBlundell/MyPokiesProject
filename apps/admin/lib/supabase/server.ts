@@ -1,9 +1,12 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createServerClient as createSharedServerClient, createServiceRoleClient as createSharedServiceClient } from '@mypokies/supabase-client'
 import { cookies } from 'next/headers'
 
 /**
  * Standard Supabase client for authenticated admin user operations.
  * Respects Row Level Security (RLS) policies.
+ *
+ * This is a thin wrapper around the shared @mypokies/supabase-client package
+ * configured specifically for the admin app.
  *
  * Use this for:
  * - Admin user authentication
@@ -15,35 +18,19 @@ import { cookies } from 'next/headers'
 export async function createClient() {
   const cookieStore = await cookies()
 
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          try {
-            cookieStore.set({ name, value, ...options })
-          } catch {
-            // This can happen if called from Server Component
-          }
-        },
-        remove(name: string, options: CookieOptions) {
-          try {
-            cookieStore.set({ name, value: '', ...options })
-          } catch {
-            // This can happen if called from Server Component
-          }
-        },
-      },
-    }
-  )
+  return createSharedServerClient({
+    clientInfo: 'mypokies-admin-server',
+    cookies: cookieStore,
+    timeout: 10000,
+    schema: 'public',
+  })
 }
 
 /**
  * Admin service role client that bypasses RLS for full database access.
+ *
+ * This is a thin wrapper around the shared @mypokies/supabase-client package
+ * configured specifically for the admin app.
  *
  * ⚠️ WARNING: This client has FULL database access!
  * - Bypasses all Row Level Security policies
@@ -63,18 +50,11 @@ export async function createClient() {
  * ```
  */
 export async function createAdminClient() {
-  const { createClient } = await import('@supabase/supabase-js')
-
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    }
-  )
+  return createSharedServiceClient({
+    clientInfo: 'mypokies-admin-service',
+    timeout: 10000,
+    schema: 'public',
+  })
 }
 
 /**

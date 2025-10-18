@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { logError } from '@/lib/utils/client-logger'
+import { logError } from '@mypokies/monitoring/client'
 
 export interface DailyBonus {
   id: string

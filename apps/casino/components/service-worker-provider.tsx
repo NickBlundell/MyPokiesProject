@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { logInfo, logError } from '@/lib/utils/client-logger'
+import { logInfo, logError } from '@mypokies/monitoring/client'
 
 export function ServiceWorkerProvider() {
   useEffect(() => {

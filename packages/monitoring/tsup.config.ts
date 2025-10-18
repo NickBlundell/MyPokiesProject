@@ -21,4 +21,15 @@ export default defineConfig([
     outDir: 'dist',
     noExternal: [],
   },
+  // Browser/Client bundle (for React client components)
+  {
+    entry: {
+      client: 'src/client-logger.ts',
+    },
+    format: ['esm'],
+    dts: true,
+    clean: false,
+    outDir: 'dist',
+    external: ['@sentry/nextjs'],
+  },
 ])

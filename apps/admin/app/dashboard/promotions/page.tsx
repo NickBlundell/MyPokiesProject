@@ -2,6 +2,16 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { logger } from '@mypokies/monitoring'
 import PromotionsClient from './PromotionsClient'
 
+export interface TriggerConditions {
+  min_deposit?: number
+  max_deposit?: number
+  game_types?: string[]
+  min_wagering?: number
+  user_status?: string
+  days_since_registration?: number
+  [key: string]: unknown
+}
+
 export interface Promotion {
   id: string
   name: string
@@ -20,7 +30,7 @@ export interface Promotion {
   claim_frequency: string
   max_claims_per_user: number | null
   trigger_type: string
-  trigger_conditions: any
+  trigger_conditions: TriggerConditions
   valid_from: string
   valid_until: string | null
   active: boolean
@@ -43,6 +53,13 @@ export interface PromotionStats {
   activePromotions: number
   totalClaims: number
   claimsToday: number
+}
+
+export interface TriggeredPromotionData {
+  promotion_id: string
+  triggered_at: string
+  claimed_at: string | null
+  status: string
 }
 
 async function getPromotionTemplates() {
@@ -113,7 +130,7 @@ async function getPromotionTemplates() {
   }
 }
 
-function calculateStats(promotions: any[], triggered: any[]): PromotionStats {
+function calculateStats(promotions: Promotion[], triggered: TriggeredPromotionData[]): PromotionStats {
   const activePromotions = promotions.filter(p => p.active).length
 
   const today = new Date()

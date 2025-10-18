@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { CacheStore } from '@/lib/hooks/cache-store'
 import { Button } from '@mypokies/ui'
 import { RefreshCw, Trash2, HardDrive, Database, Globe } from 'lucide-react'
-import { logInfo } from '@/lib/utils/client-logger'
+import { logInfo } from '@mypokies/monitoring/client'
 
 export function CacheManager() {
   const [stats, setStats] = useState({

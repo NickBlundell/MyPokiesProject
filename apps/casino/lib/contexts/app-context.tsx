@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState, useRef, ReactNode, useM
 import { createClient } from '@/lib/supabase/client'
 import type { GameWithStats } from '@/types/games'
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
-import { logError } from '@/lib/utils/client-logger'
+import { logError } from '@mypokies/monitoring/client'
 
 interface GameTableRow {
   id?: string

@@ -1,28 +1,10 @@
-import { createClient } from '@/lib/supabase/server'
-import { NextRequest, NextResponse } from 'next/server'
-import { checkRateLimit } from '@/lib/rate-limit'
+import { NextResponse } from 'next/server'
+import { apiGet } from '@/lib/api/middleware'
 
 // GET /api/games - List all games with filtering and pagination
-export async function GET(request: NextRequest) {
-  // Rate limiting - standard (10 requests per 10 seconds)
-  const { success, limit: rateLimitLimit, remaining, reset } = await checkRateLimit(request)
-
-  if (!success) {
-    return NextResponse.json(
-      { error: 'Too many requests. Please try again later.' },
-      {
-        status: 429,
-        headers: {
-          'X-RateLimit-Limit': rateLimitLimit.toString(),
-          'X-RateLimit-Remaining': remaining.toString(),
-          'X-RateLimit-Reset': reset.toString(),
-        }
-      }
-    )
-  }
-
-  const supabase = await createClient()
-  const searchParams = request.nextUrl.searchParams
+export const GET = apiGet(async (request, { supabase }) => {
+  const url = new URL(request.url)
+  const searchParams = url.searchParams
 
   // Pagination
   const page = parseInt(searchParams.get('page') || '1')
@@ -130,4 +112,4 @@ export async function GET(request: NextRequest) {
   }
 
   return response
-}
+}, { requireAuth: false })

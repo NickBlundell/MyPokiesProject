@@ -8,7 +8,7 @@ import { memo } from 'react'
 // Footer content is static and doesn't need to re-render on parent changes
 export const Footer = memo(function Footer() {
   return (
-    <footer className="bg-gradient-to-b from-[#0a1628] via-[#0d1a32] to-[#101f3c] border-t border-[#1a2439]/30">
+    <footer className="border-t border-gray-700/50" style={{ background: 'linear-gradient(180deg, #050810 0%, #070a12 100%)' }}>
       <div className="max-w-[1400px] mx-auto px-6 md:px-8 py-8 md:py-12">
         {/* Main Footer Content */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 md:gap-8 mb-8">

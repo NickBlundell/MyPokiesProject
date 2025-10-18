@@ -2,7 +2,7 @@ import React from 'react'
 import { Activity } from 'lucide-react'
 import type { TabProps } from '../types'
 
-export function ActivityTab({ player }: TabProps) {
+export function ActivityTab({ player: _player }: TabProps) {
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg border border-gray-200">

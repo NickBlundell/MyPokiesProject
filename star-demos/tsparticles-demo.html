@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tsParticles Star Demo - Lightweight & Easy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #000000 0%, #000000 25%, #0a1628 100%);
+            height: 100vh;
+        }
+
+        #tsparticles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 300px;
+        }
+
+        .controls h2 {
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #22d3ee;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+        }
+
+        .value-display {
+            display: inline-block;
+            margin-left: 10px;
+            color: #22d3ee;
+            font-weight: bold;
+        }
+
+        .info {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .info h3 {
+            color: #22d3ee;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .info p {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+
+        .fps {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 15px;
+            border-radius: 8px;
+            color: #22d3ee;
+            font-weight: bold;
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="fps">FPS: <span id="fps">60</span></div>
+
+    <div id="tsparticles"></div>
+
+    <div class="controls">
+        <h2>⚙️ tsParticles Settings</h2>
+
+        <div class="control-group">
+            <label>Star Count: <span class="value-display" id="count-value">3000</span></label>
+            <input type="range" id="count" min="500" max="8000" value="3000" step="500">
+        </div>
+
+        <div class="control-group">
+            <label>Size: <span class="value-display" id="size-value">2</span></label>
+            <input type="range" id="size" min="1" max="5" value="2" step="0.5">
+        </div>
+
+        <div class="control-group">
+            <label>Twinkle Speed: <span class="value-display" id="speed-value">3</span></label>
+            <input type="range" id="speed" min="1" max="10" value="3" step="1">
+        </div>
+
+        <div class="control-group">
+            <label>Opacity: <span class="value-display" id="opacity-value">0.8</span></label>
+            <input type="range" id="opacity" min="0.1" max="1" value="0.8" step="0.1">
+        </div>
+    </div>
+
+    <div class="info">
+        <h3>📦 tsParticles</h3>
+        <p>✅ Bundle Size: ~20-40KB</p>
+        <p>✅ Easy to implement</p>
+        <p>✅ Great documentation</p>
+        <p>✅ Highly customizable</p>
+        <p>⚠️ 2D only (no depth)</p>
+    </div>
+
+    <!-- Load tsParticles v2 from CDN (more stable) -->
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+
+    <script>
+        let particlesInstance = null;
+        let lastTime = performance.now();
+        let frameCount = 0;
+
+        // FPS counter
+        function updateFPS() {
+            frameCount++;
+            const currentTime = performance.now();
+            if (currentTime >= lastTime + 1000) {
+                document.getElementById('fps').textContent = frameCount;
+                frameCount = 0;
+                lastTime = currentTime;
+            }
+            requestAnimationFrame(updateFPS);
+        }
+        updateFPS();
+
+        async function loadParticles(config) {
+            if (particlesInstance) {
+                particlesInstance.destroy();
+            }
+
+            particlesInstance = await tsParticles.load("tsparticles", config);
+        }
+
+        function getConfig() {
+            const count = parseInt(document.getElementById('count').value);
+            const size = parseFloat(document.getElementById('size').value);
+            const speed = parseInt(document.getElementById('speed').value);
+            const opacity = parseFloat(document.getElementById('opacity').value);
+
+            return {
+                background: {
+                    color: "transparent"
+                },
+                fpsLimit: 120,
+                particles: {
+                    number: {
+                        value: count,
+                        density: {
+                            enable: true,
+                            area: 800
+                        }
+                    },
+                    color: {
+                        value: "#ffffff"
+                    },
+                    shape: {
+                        type: "circle"
+                    },
+                    opacity: {
+                        value: opacity,
+                        random: {
+                            enable: true,
+                            minimumValue: 0.1
+                        },
+                        animation: {
+                            enable: true,
+                            speed: speed,
+                            minimumValue: 0.1,
+                            sync: false
+                        }
+                    },
+                    size: {
+                        value: size,
+                        random: {
+                            enable: true,
+                            minimumValue: size * 0.5
+                        }
+                    },
+                    move: {
+                        enable: false
+                    }
+                },
+                detectRetina: true
+            };
+        }
+
+        // Initialize particles after a short delay to ensure DOM is ready
+        setTimeout(() => {
+            loadParticles(getConfig());
+        }, 100);
+
+        // Update controls
+        document.getElementById('count').addEventListener('input', (e) => {
+            document.getElementById('count-value').textContent = e.target.value;
+            loadParticles(getConfig());
+        });
+
+        document.getElementById('size').addEventListener('input', (e) => {
+            document.getElementById('size-value').textContent = e.target.value;
+            loadParticles(getConfig());
+        });
+
+        document.getElementById('speed').addEventListener('input', (e) => {
+            document.getElementById('speed-value').textContent = e.target.value;
+            loadParticles(getConfig());
+        });
+
+        document.getElementById('opacity').addEventListener('input', (e) => {
+            document.getElementById('opacity-value').textContent = e.target.value;
+            loadParticles(getConfig());
+        });
+    </script>
+</body>
+</html>

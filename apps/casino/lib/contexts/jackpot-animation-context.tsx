@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState, ReactNode, useMemo, use
 import { createClient } from '@/lib/supabase/client'
 import type { JackpotPool } from '@/types/jackpot'
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
-import { logError } from '@/lib/utils/client-logger'
+import { logError } from '@mypokies/monitoring/client'
 
 interface JackpotTableRow {
   [key: string]: unknown
@@ -23,6 +23,7 @@ export function JackpotAnimationProvider({ children }: { children: ReactNode }) 
   const [animatedAmount, setAnimatedAmount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const animationIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const tickerIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -123,6 +124,43 @@ export function JackpotAnimationProvider({ children }: { children: ReactNode }) 
       }
     }
   }, []) // Only run once on mount
+
+  // Random ticker effect - increments jackpot randomly
+  useEffect(() => {
+    let isActive = true
+
+    // Start random ticker with varying intervals
+    const tick = () => {
+      if (!isActive) return
+
+      // Random increment between $0.10 and $2.50
+      const increment = Math.random() * 2.4 + 0.1
+      setAnimatedAmount(prev => prev + increment)
+
+      // Also update the current jackpot value
+      setCurrentJackpot(prev => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          current_amount: prev.current_amount + increment
+        }
+      })
+
+      // Schedule next tick with random interval (2-5 seconds)
+      const nextInterval = Math.random() * 3000 + 2000
+      tickerIntervalRef.current = setTimeout(tick, nextInterval)
+    }
+
+    // Start the first tick
+    tick()
+
+    return () => {
+      isActive = false
+      if (tickerIntervalRef.current) {
+        clearTimeout(tickerIntervalRef.current)
+      }
+    }
+  }, [])
 
   const value = useMemo(() => ({
     animatedAmount,

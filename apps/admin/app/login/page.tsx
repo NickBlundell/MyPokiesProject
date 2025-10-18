@@ -12,7 +12,6 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -20,6 +19,9 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
+      // Create client inside the handler to avoid SSR issues
+      const supabase = createClient()
+
       // For now, we'll use Supabase auth
       // In production, you'd implement custom admin auth with the admin_users table
       const { data, error: _authError } = await supabase.auth.signInWithPassword({

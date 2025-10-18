@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { RealtimeChannel, REALTIME_SUBSCRIBE_STATES } from '@supabase/supabase-js'
 import type { CurrentJackpotInfo } from '@/types/jackpot'
 import { CacheStore } from './cache-store'
-import { logError, logInfo } from '@/lib/utils/client-logger'
+import { logError, logInfo } from '@mypokies/monitoring/client'
 
 const CACHE_KEY = 'mypokies_cache_jackpot'
 const CACHE_TTL = 30000 // 30 seconds

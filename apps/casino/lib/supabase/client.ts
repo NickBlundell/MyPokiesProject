@@ -1,8 +1,10 @@
-import { createBrowserClient } from "@supabase/ssr";
-import type { SupabaseClient } from "@supabase/supabase-js";
+import { createBrowserClient, resetBrowserClient } from '@mypokies/supabase-client'
 
 /**
  * Client-side Supabase client for browser/React components in the casino app.
+ *
+ * This is a thin wrapper around the shared @mypokies/supabase-client package
+ * configured specifically for the casino app.
  *
  * Use in:
  * - Client Components (with 'use client' directive)
@@ -10,7 +12,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
  * - Real-time subscriptions (balance, jackpot, loyalty updates)
  * - Client-side queries
  *
- * Features:
+ * Features (from @mypokies/supabase-client):
  * - Singleton pattern (one instance per page load) - PERFORMANCE FIX
  * - Automatic session management
  * - Token refresh with 10s timeout
@@ -28,59 +30,15 @@ import type { SupabaseClient } from "@supabase/supabase-js";
  * ```
  */
 
-let browserClient: SupabaseClient | undefined;
-
 export function createClient() {
-  // PERFORMANCE FIX: Use singleton pattern to avoid creating multiple instances
-  // This prevents connection exhaustion and WebSocket duplication
-  if (typeof window === 'undefined') {
-    throw new Error('createClient can only be called in browser context');
-  }
-
-  if (browserClient) {
-    return browserClient;
-  }
-
-  browserClient = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        storage: window.localStorage,
-        storageKey: 'supabase.auth.token',
-        flowType: 'pkce',
-      },
-      realtime: {
-        timeout: 10000, // 10 second timeout for realtime connections
-        params: {
-          eventsPerSecond: 10, // Optimized for real-time balance/jackpot updates
-        },
-      },
-      global: {
-        headers: {
-          'x-client-info': 'mypokies-casino',
-        },
-        fetch: (url, options = {}) => {
-          // Add 10 second timeout to all requests
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-          return fetch(url, {
-            ...options,
-            signal: controller.signal,
-          }).finally(() => clearTimeout(timeoutId));
-        },
-      },
-    }
-  );
-
-  return browserClient;
+  return createBrowserClient({
+    clientInfo: 'mypokies-casino',
+    storageKey: 'supabase.auth.token',
+    enableRealtime: true,
+    timeout: 10000,
+    eventsPerSecond: 10,
+  })
 }
 
 // Export function to reset singleton (useful for testing or logout)
-export function resetBrowserClient() {
-  browserClient = undefined;
-}
+export { resetBrowserClient }

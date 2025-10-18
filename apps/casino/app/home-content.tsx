@@ -83,7 +83,7 @@ const GameCard = memo(function GameCard({ game }: GameCardProps) {
 
   return (
     <div className="group cursor-pointer transition-transform duration-300 hover:-translate-y-2 overflow-visible">
-      <div className="relative overflow-hidden rounded-lg bg-[#1a2024] hover:shadow-2xl transition-all duration-300 border border-[#2a3439] hover:border-blue-800/50">
+      <div className="relative overflow-hidden rounded-lg bg-[#1a2024] hover:shadow-2xl transition-all duration-300 border border-gray-700/50 hover:border-blue-800/50">
         {/* Game Image */}
         <div className="aspect-[3/4] bg-gradient-to-br from-blue-900/20 via-[#1a2024] to-yellow-900/20 relative overflow-hidden">
           {thumbnail_url && !imageError ? (
@@ -262,7 +262,7 @@ export default function HomeContent() {
   const { user } = useAuth()
   const { games, gamesLoading: loading } = useAppContext()
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [sliderStyle, setSliderStyle] = useState({ left: 0, width: 0 })
+  const [sliderStyle, setSliderStyle] = useState({ left: '0px', width: '0px' })
   const [isJellyAnimating, setIsJellyAnimating] = useState(false)
   const buttonRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({})
   const [searchQuery, setSearchQuery] = useState('')
@@ -277,8 +277,8 @@ export default function HomeContent() {
     const activeButton = buttonRefs.current[selectedCategory]
     if (activeButton) {
       setSliderStyle({
-        left: activeButton.offsetLeft,
-        width: activeButton.offsetWidth
+        left: `${activeButton.offsetLeft}px`,
+        width: `${activeButton.offsetWidth}px`
       })
     }
 
@@ -352,10 +352,10 @@ export default function HomeContent() {
         /* Breathing glow animation */
         @keyframes breatheGlow {
           0%, 100% {
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3), 0 0 25px rgba(59, 130, 246, 0.2);
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.3), 0 0 25px rgba(37, 99, 235, 0.2);
           }
           50% {
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4), 0 0 35px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.4), 0 0 35px rgba(37, 99, 235, 0.3);
           }
         }
 
@@ -367,7 +367,8 @@ export default function HomeContent() {
           animation: breatheGlow 2s ease-in-out infinite;
         }
       `}</style>
-      <div className="relative bg-black/30 backdrop-blur-sm py-6 md:py-10 flex-1 overflow-visible">
+      <div className="relative py-6 md:py-10 flex-1 overflow-visible">
+        <div className="relative max-w-[1400px] mx-auto px-6 md:px-8">
           {/* Account Dashboard Section - Only for logged in users */}
           {user && (
             <AccountDashboard userName={user.user_metadata?.first_name} />
@@ -376,34 +377,50 @@ export default function HomeContent() {
           {/* Hero Section - Only for non-logged in users */}
           {!user && (
             <div className="relative overflow-visible mb-6 md:mb-10">
-              <div className="relative max-w-[1400px] mx-auto px-6 md:px-8">
-                <div className="relative overflow-visible rounded-xl bg-[#1a2024] border-2 border-[#2a3439] shadow-xl">
+              <div className="relative">
+                <div className="relative overflow-visible rounded-xl bg-[#1C2428] border-2 border-[#2a3439] shadow-xl" style={{ backgroundColor: '#1C2428', opacity: 1 }}>
                   <div className="relative p-6 md:p-8">
-                    <div className="text-left">
-                      <div className="inline-block bg-yellow-400/20 backdrop-blur-sm px-2 py-0.5 md:px-4 md:py-2 rounded-full mb-1.5 md:mb-3">
-                        <span className="text-yellow-400 font-semibold text-[8px] md:text-sm uppercase tracking-wide">
-                          ⚡ Welcome Offer
-                        </span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                      {/* Left column - Video */}
+                      <div className="flex justify-start">
+                        <video
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          className="w-full max-w-sm"
+                        >
+                          <source src="/welcome-offer-animation.mp4" type="video/mp4" />
+                        </video>
                       </div>
-                      <h1 className="text-base md:text-4xl lg:text-5xl font-bold text-white mb-1 md:mb-3">
-                        Get 100% Match Bonus
-                      </h1>
-                      <p className="text-white text-[10px] md:text-lg mb-2 md:mb-4 opacity-95">
-                        Up to <span className="font-bold text-yellow-400">$500</span> on your first deposit + <span className="font-bold text-yellow-400">$20 Free</span> on phone verification!
-                      </p>
-                      <div className="flex flex-wrap gap-1.5 md:gap-3">
-                        <Link
-                          href="/auth/signup"
-                          className="bg-yellow-400 hover:bg-yellow-500 text-[#0a0f14] px-3 py-1.5 md:px-6 md:py-3 rounded-full font-bold text-[10px] md:text-base transition-all transform hover:scale-105 shadow-xl"
-                        >
-                          Sign Up Now
-                        </Link>
-                        <Link
-                          href="/promotions"
-                          className="bg-transparent border border-yellow-400 hover:bg-yellow-400 hover:text-[#0a0f14] text-yellow-400 px-3 py-1.5 md:px-6 md:py-3 rounded-full font-bold text-[10px] md:text-base transition-all"
-                        >
-                          View All Promotions
-                        </Link>
+
+                      {/* Right column - Text content */}
+                      <div className="text-left">
+                        <div className="inline-block bg-yellow-400/20 backdrop-blur-sm px-2 py-0.5 md:px-4 md:py-2 rounded-full mb-1.5 md:mb-3">
+                          <span className="text-yellow-400 font-semibold text-[8px] md:text-sm uppercase tracking-wide">
+                            ⚡ Welcome Offer
+                          </span>
+                        </div>
+                        <h1 className="text-base md:text-4xl lg:text-5xl font-bold text-white mb-1 md:mb-3">
+                          Get 100% Match Bonus
+                        </h1>
+                        <p className="text-white text-[10px] md:text-lg mb-2 md:mb-4 opacity-95">
+                          Up to <span className="font-bold text-yellow-400">$500</span> on your first deposit + <span className="font-bold text-yellow-400">$20 Free</span> on phone verification!
+                        </p>
+                        <div className="flex flex-wrap gap-1.5 md:gap-3">
+                          <Link
+                            href="/auth/signup"
+                            className="bg-yellow-400 hover:bg-yellow-500 text-[#0a0f14] px-3 py-1.5 md:px-6 md:py-3 rounded-full font-bold text-[10px] md:text-base transition-all transform hover:scale-105 shadow-xl"
+                          >
+                            Sign Up Now
+                          </Link>
+                          <Link
+                            href="/promotions"
+                            className="bg-transparent border border-yellow-400 hover:bg-yellow-400 hover:text-[#0a0f14] text-yellow-400 px-3 py-1.5 md:px-6 md:py-3 rounded-full font-bold text-[10px] md:text-base transition-all"
+                          >
+                            View All Promotions
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -412,9 +429,9 @@ export default function HomeContent() {
             </div>
           )}
 
-          <div className="relative px-6 md:px-8 pb-6 md:pb-10 max-w-[1400px] mx-auto overflow-visible">
+          <div className="relative pb-6 md:pb-10 overflow-visible">
           {/* Search Bar */}
-          <div className="mb-6 md:mb-10">
+          <div className="mt-6 md:mt-10 mb-6 md:mb-10">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
@@ -429,15 +446,17 @@ export default function HomeContent() {
 
           {/* Category Slider */}
           <div className="mb-6 md:mb-10 overflow-x-auto scrollbar-hide">
-            <div className="inline-flex bg-[#1a2024] rounded-lg p-1 min-w-max relative">
+            <div className="inline-flex bg-[#1a2024] rounded-lg p-1 min-w-max relative border border-gray-700/50">
               {/* Animated sliding background */}
               <div
-                className={`absolute bg-blue-600 rounded-lg glow-breathe ${isJellyAnimating ? 'jelly-blob-active' : ''}`}
+                suppressHydrationWarning
+                className={`absolute rounded-lg glow-breathe ${isJellyAnimating ? 'jelly-blob-active' : ''}`}
                 style={{
                   left: sliderStyle.left,
                   width: sliderStyle.width,
                   height: 'calc(100% - 8px)',
                   top: '4px',
+                  backgroundColor: 'rgb(37, 99, 235)',
                   transition: 'left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
                 }}
               />
@@ -719,6 +738,7 @@ export default function HomeContent() {
 
           </div>
         </div>
+      </div>
 
       {/* Footer */}
       <Footer />

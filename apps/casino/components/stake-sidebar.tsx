@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState, useRef, useMemo, lazy, Suspense, memo } from 'react'
 import {
@@ -32,12 +33,13 @@ import {
   Diamond
 } from 'lucide-react'
 import { useSidebar } from '@/lib/contexts/sidebar-context'
+import { useAuthModal } from '@/lib/contexts/auth-modal-context'
 import { useJackpotAnimation } from '@/lib/contexts/jackpot-animation-context'
 import { usePlayerBalance } from '@/lib/contexts/player-context'
 import { useBonusTotals } from '@/lib/hooks/use-bonus-totals'
 import { JackpotCounter } from './jackpot-counter'
 import { JackpotCountdown } from './jackpot-countdown'
-import { logDebug } from '@/lib/utils/client-logger'
+import { logDebug } from '@mypokies/monitoring/client'
 
 // Lazy load WalletModal - only loads when mobile user clicks wallet button
 const WalletModal = lazy(() => import('./wallet-modal').then(mod => ({ default: mod.WalletModal })))
@@ -118,6 +120,7 @@ interface StakeSidebarProps {
 export const StakeSidebar = memo(function StakeSidebar({ user }: StakeSidebarProps = {}) {
   const pathname = usePathname()
   const { isCollapsed, toggleCollapsed, isMobileOpen, setIsMobileOpen } = useSidebar()
+  const { openSignUp } = useAuthModal()
   const sidebarRef = useRef<HTMLDivElement>(null)
   const isLoggedIn = !!user
   const [sliderStyle, setSliderStyle] = useState({ top: 0, height: 0 })
@@ -299,7 +302,7 @@ export const StakeSidebar = memo(function StakeSidebar({ user }: StakeSidebarPro
               isMobileOpen ? 'font-bold' : 'text-gray-300'
             }`}
             style={isMobileOpen ? {
-              color: '#FFD700',
+              color: '#45a5ff',
               transform: 'scale(1.35)'
             } : {}}
           >
@@ -324,11 +327,14 @@ export const StakeSidebar = memo(function StakeSidebar({ user }: StakeSidebarPro
               pathname === '/jackpot' && !isMobileOpen && !isWalletModalOpen ? 'font-bold' : 'text-gray-300'
             }`}
             style={pathname === '/jackpot' && !isMobileOpen && !isWalletModalOpen ? {
-              color: '#FFD700',
+              color: '#45a5ff',
               transform: 'scale(1.35)'
             } : {}}
           >
-            <Trophy className={`transition-transform ${pathname === '/jackpot' && !isMobileOpen && !isWalletModalOpen ? 'w-4 h-4' : 'w-4 h-4'}`} />
+            <Trophy
+              className={`transition-transform w-4 h-4`}
+              style={pathname === '/jackpot' && !isMobileOpen && !isWalletModalOpen ? { color: '#45a5ff' } : {}}
+            />
             <span className="text-[10px]">Jackpot</span>
           </Link>
 
@@ -345,11 +351,14 @@ export const StakeSidebar = memo(function StakeSidebar({ user }: StakeSidebarPro
               pathname === '/' && !isMobileOpen && !isWalletModalOpen ? 'font-bold' : 'text-gray-300'
             }`}
             style={pathname === '/' && !isMobileOpen && !isWalletModalOpen ? {
-              color: '#FFD700',
+              color: '#45a5ff',
               transform: 'scale(1.35)'
             } : {}}
           >
-            <Home className={`transition-transform ${pathname === '/' && !isMobileOpen && !isWalletModalOpen ? 'w-4 h-4' : 'w-4 h-4'}`} />
+            <Home
+              className={`transition-transform w-4 h-4`}
+              style={pathname === '/' && !isMobileOpen && !isWalletModalOpen ? { color: '#45a5ff' } : {}}
+            />
             <span className="text-[10px]">Home</span>
           </Link>
 
@@ -366,11 +375,14 @@ export const StakeSidebar = memo(function StakeSidebar({ user }: StakeSidebarPro
               pathname === '/vip' && !isMobileOpen && !isWalletModalOpen ? 'font-bold' : 'text-gray-300'
             }`}
             style={pathname === '/vip' && !isMobileOpen && !isWalletModalOpen ? {
-              color: '#FFD700',
+              color: '#45a5ff',
               transform: 'scale(1.35)'
             } : {}}
           >
-            <Crown className={`transition-transform ${pathname === '/vip' && !isMobileOpen && !isWalletModalOpen ? 'w-4 h-4' : 'w-4 h-4'}`} />
+            <Crown
+              className={`transition-transform w-4 h-4`}
+              style={pathname === '/vip' && !isMobileOpen && !isWalletModalOpen ? { color: '#45a5ff' } : {}}
+            />
             <span className="text-[10px]">VIP</span>
           </Link>
 
@@ -378,17 +390,25 @@ export const StakeSidebar = memo(function StakeSidebar({ user }: StakeSidebarPro
           <button
             ref={walletButtonRef}
             onClick={() => {
-              // Close menu if open, then toggle wallet
+              // Close menu if open
               if (isMobileOpen) {
                 setIsMobileOpen(false)
               }
+
+              // If not logged in, show signup modal instead of wallet
+              if (!isLoggedIn) {
+                openSignUp()
+                return
+              }
+
+              // If logged in, toggle wallet modal
               setIsWalletModalOpen(!isWalletModalOpen)
             }}
             className={`flex flex-col items-center justify-center flex-1 h-full transition-all gap-0.5 relative z-10 ${
               isWalletModalOpen ? 'font-bold' : 'text-gray-300'
             }`}
             style={isWalletModalOpen ? {
-              color: '#FFD700',
+              color: '#45a5ff',
               transform: 'scale(1.35)'
             } : {}}
           >
@@ -436,13 +456,36 @@ export const StakeSidebar = memo(function StakeSidebar({ user }: StakeSidebarPro
             overflow-x: visible;
           }
 
+          /* Active state for navigation items */
+          :global(.nav-item-active) {
+            color: #45a5ff !important;
+          }
+
+          :global(.nav-item-active svg) {
+            color: #45a5ff !important;
+          }
+
           /* Hover effect for navigation items */
           :global(.hover-nav-item:not(.text-gray-500):hover) {
-            color: #FFD700 !important;
+            color: #45a5ff !important;
           }
 
           :global(.hover-nav-item:not(.text-gray-500):hover svg) {
-            color: #FFD700 !important;
+            color: #45a5ff !important;
+          }
+
+          /* Breathing glow animation for active nav items */
+          @keyframes navGlowBreathe {
+            0%, 100% {
+              text-shadow: 0 0 15px rgba(69, 165, 255, 0.5), 0 0 25px rgba(69, 165, 255, 0.3);
+            }
+            50% {
+              text-shadow: 0 0 20px rgba(69, 165, 255, 0.6), 0 0 35px rgba(69, 165, 255, 0.4);
+            }
+          }
+
+          :global(.nav-item-active) {
+            animation: navGlowBreathe 2s ease-in-out infinite;
           }
 
           /* Jelly blob stretch animation - stretches both horizontally and vertically */
@@ -500,10 +543,10 @@ export const StakeSidebar = memo(function StakeSidebar({ user }: StakeSidebarPro
           /* Breathing glow animation for mobile nav */
           @keyframes breatheGlowMobile {
             0%, 100% {
-              box-shadow: 0 0 15px rgba(59, 130, 246, 0.3), 0 0 25px rgba(59, 130, 246, 0.2);
+              box-shadow: 0 0 15px rgba(56, 112, 255, 0.3), 0 0 25px rgba(56, 112, 255, 0.2);
             }
             50% {
-              box-shadow: 0 0 20px rgba(59, 130, 246, 0.4), 0 0 35px rgba(59, 130, 246, 0.3);
+              box-shadow: 0 0 20px rgba(56, 112, 255, 0.4), 0 0 35px rgba(56, 112, 255, 0.3);
             }
           }
 
@@ -569,16 +612,17 @@ export const StakeSidebar = memo(function StakeSidebar({ user }: StakeSidebarPro
               border-radius: 0;
               width: ${isCollapsed ? '5rem' : '18rem'};
               transition: width 0.3s ease;
+              border-right: 1px solid rgba(55, 65, 81, 0.5);
             }
           }
 
           /* Jackpot glow animation */
           @keyframes glowPulse {
             0%, 100% {
-              box-shadow: 0 0 10px 2px #3b82f6;
+              box-shadow: 0 0 10px 2px #45a5ff;
             }
             50% {
-              box-shadow: 0 0 20px 4px #3b82f6;
+              box-shadow: 0 0 20px 4px #45a5ff;
             }
           }
 
@@ -615,7 +659,7 @@ export const StakeSidebar = memo(function StakeSidebar({ user }: StakeSidebarPro
               alignItems: 'center',
               gap: '0px'
             }}>
-              <img src="/logo.webp" alt="MyPokies" style={{ height: '35px', width: 'auto' }} />
+              <Image src="/logo.webp" alt="MyPokies" width={90} height={35} style={{ height: '35px', width: 'auto' }} priority />
             </div>
             <div className="bg-black pb-1 px-3 mx-4 flex items-center justify-center jackpot-glow" style={{ border: '2.67px solid #FFD700', paddingTop: '12px' }}>
               {jackpotLoading ? (
@@ -654,7 +698,7 @@ export const StakeSidebar = memo(function StakeSidebar({ user }: StakeSidebarPro
               alignItems: 'center',
               gap: '0px'
             }}>
-              <img src="/logo.webp" alt="MyPokies" style={{ height: isCollapsed ? '25px' : '35px', width: 'auto' }} />
+              <Image src="/logo.webp" alt="MyPokies" width={90} height={35} style={{ height: isCollapsed ? '25px' : '35px', width: 'auto' }} priority />
             </div>
             <div className="bg-black pb-1 px-3 flex items-center justify-center jackpot-glow" style={{ border: '2.67px solid #FFD700', paddingTop: '12px' }}>
               {jackpotLoading ? (
@@ -712,28 +756,25 @@ export const StakeSidebar = memo(function StakeSidebar({ user }: StakeSidebarPro
                             if (isCollapsed) e.stopPropagation();
                             setIsMobileOpen(false);
                           }}
-                          className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all duration-200 group relative z-10 hover-nav-item ${
+                          className={`flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all duration-200 group relative z-10 hover-nav-item ${
                             isDisabled
                               ? 'text-gray-500 cursor-not-allowed'
+                              : isActive
+                              ? 'nav-item-active'
                               : 'text-white'
                           } ${isCollapsed ? 'justify-center' : ''}`}
                           title={isCollapsed ? item.label : ''}
                           style={isActive && !isDisabled ? {
-                            color: '#FFD700',
-                            background: 'linear-gradient(to right, rgba(37, 99, 235, 0.08), transparent)'
+                            color: '#45a5ff',
+                            background: 'linear-gradient(to right, rgba(69, 165, 255, 0.15), transparent)',
+                            borderLeft: '2px solid #45a5ff'
                           } : {}}
                         >
-                          <div
-                            style={isActive && !isDisabled ? {
-                              color: '#FFD700'
-                            } : {}}
-                          >
-                            <Icon
-                              className={`flex-shrink-0 ${
-                                isDisabled ? 'text-gray-500' : 'text-white'
-                              } ${isCollapsed ? 'w-6 h-6' : 'w-5 h-5'} transition-colors`}
-                            />
-                          </div>
+                          <Icon
+                            className={`flex-shrink-0 ${
+                              isDisabled ? 'text-gray-500' : isActive ? 'text-[#45a5ff]' : 'text-white'
+                            } ${isCollapsed ? 'w-6 h-6' : 'w-5 h-5'} transition-colors`}
+                          />
                           {!isCollapsed && (
                             <span className="flex-1">{item.label}</span>
                           )}

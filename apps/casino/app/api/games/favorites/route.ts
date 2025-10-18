@@ -1,38 +1,9 @@
-import { createClient } from '@/lib/supabase/server'
-import { NextRequest, NextResponse } from 'next/server'
-import { checkRateLimit } from '@/lib/rate-limit'
+import { NextResponse } from 'next/server'
+import { apiGet, apiPost } from '@/lib/api/middleware'
 import { addFavoriteSchema } from '@/lib/schemas/games'
 
 // GET /api/games/favorites - Get user's favorite games
-export async function GET(request: Request) {
-  // Rate limiting - standard (10 requests per 10 seconds)
-  const { success, limit, remaining, reset } = await checkRateLimit(request)
-
-  if (!success) {
-    return NextResponse.json(
-      { error: 'Too many requests. Please try again later.' },
-      {
-        status: 429,
-        headers: {
-          'X-RateLimit-Limit': limit.toString(),
-          'X-RateLimit-Remaining': remaining.toString(),
-          'X-RateLimit-Reset': reset.toString(),
-        }
-      }
-    )
-  }
-
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    )
-  }
-
+export const GET = apiGet(async (request, { supabase, userId }) => {
   // Fetch user's favorite games with game details
   const { data: favorites, error } = await supabase
     .from('player_favorite_games')
@@ -41,7 +12,7 @@ export async function GET(request: Request) {
       created_at,
       game:games(*)
     `)
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -58,38 +29,10 @@ export async function GET(request: Request) {
       ...f.game
     }))
   })
-}
+})
 
 // POST /api/games/favorites - Add game to favorites
-export async function POST(request: NextRequest) {
-  // Rate limiting - standard (10 requests per 10 seconds)
-  const { success, limit, remaining, reset } = await checkRateLimit(request)
-
-  if (!success) {
-    return NextResponse.json(
-      { error: 'Too many requests. Please try again later.' },
-      {
-        status: 429,
-        headers: {
-          'X-RateLimit-Limit': limit.toString(),
-          'X-RateLimit-Remaining': remaining.toString(),
-          'X-RateLimit-Reset': reset.toString(),
-        }
-      }
-    )
-  }
-
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    )
-  }
-
+export const POST = apiPost(async (request, { supabase, userId }) => {
   // Parse and validate request body
   const body = await request.json()
   const validation = addFavoriteSchema.safeParse(body)
@@ -127,7 +70,7 @@ export async function POST(request: NextRequest) {
   const { data, error } = await supabase
     .from('player_favorite_games')
     .insert({
-      user_id: user.id,
+      user_id: userId,
       game_id
     })
     .select()
@@ -148,4 +91,4 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({ success: true, favorite: data })
-}
+})

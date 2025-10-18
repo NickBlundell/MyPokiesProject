@@ -23,7 +23,7 @@ export default function PromotionsClient({
   promotions: initialPromotions,
   stats
 }: PromotionsClientProps) {
-  const [promotions, setPromotions] = useState(initialPromotions)
+  const [promotions] = useState(initialPromotions)
   const [showModal, setShowModal] = useState(false)
   const [editingPromotion, setEditingPromotion] = useState<Promotion | null>(null)
 
@@ -83,15 +83,15 @@ export default function PromotionsClient({
       {/* Page Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Promotion Templates</h1>
-          <p className="text-gray-600 mt-2">Create and manage promotion templates that trigger offers to users</p>
+          <h1 className="text-3xl font-bold text-gray-900">Offers</h1>
+          <p className="text-gray-600 mt-2">Create and manage offers that trigger promotions to users</p>
         </div>
         <button
           onClick={handleCreate}
           className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
-          Create Template
+          Create Offer
         </button>
       </div>
 
@@ -102,7 +102,7 @@ export default function PromotionsClient({
             <Gift className="w-8 h-8 text-indigo-600" />
           </div>
           <p className="text-2xl font-bold text-gray-900">{stats.totalPromotions}</p>
-          <p className="text-sm text-gray-600">Total Templates</p>
+          <p className="text-sm text-gray-600">Total Offers</p>
         </div>
 
         <div className="bg-white p-4 rounded-lg border border-gray-200">
@@ -110,7 +110,7 @@ export default function PromotionsClient({
             <ToggleRight className="w-8 h-8 text-green-600" />
           </div>
           <p className="text-2xl font-bold text-gray-900">{stats.activePromotions}</p>
-          <p className="text-sm text-gray-600">Active Templates</p>
+          <p className="text-sm text-gray-600">Active Offers</p>
         </div>
 
         <div className="bg-white p-4 rounded-lg border border-gray-200">
@@ -166,7 +166,7 @@ export default function PromotionsClient({
               {promotions.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
-                    No templates yet. Create your first template to get started.
+                    No offers yet. Create your first offer to get started.
                   </td>
                 </tr>
               ) : (
@@ -287,7 +287,7 @@ export default function PromotionsClient({
             {/* Modal Header */}
             <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
               <h2 className="text-2xl font-bold text-gray-900">
-                {editingPromotion ? 'Edit Template' : 'Create Template'}
+                {editingPromotion ? 'Edit Offer' : 'Create Offer'}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
@@ -300,7 +300,7 @@ export default function PromotionsClient({
             {/* Modal Content */}
             <div className="p-6 space-y-6">
               <p className="text-gray-600 font-medium mb-4">
-                Create Template Form
+                Create Offer Form
               </p>
 
               {/* Section 1: Offer Details */}
@@ -401,7 +401,7 @@ export default function PromotionsClient({
               <button
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
               >
-                {editingPromotion ? 'Save Changes' : 'Create Template'}
+                {editingPromotion ? 'Save Changes' : 'Create Offer'}
               </button>
             </div>
           </div>

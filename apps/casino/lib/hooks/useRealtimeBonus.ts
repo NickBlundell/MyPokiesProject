@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/lib/contexts/auth-context'
 import type { PlayerBonus } from '@/types/bonus'
 import type { RealtimeChannel, REALTIME_SUBSCRIBE_STATES } from '@supabase/supabase-js'
-import { logError, logInfo } from '@/lib/utils/client-logger'
+import { logError, logInfo } from '@mypokies/monitoring/client'
 
 type BonusData = Omit<PlayerBonus, 'bonus_amount' | 'wagering_requirement_total' | 'wagering_completed'> & {
   bonus_amount: number | string

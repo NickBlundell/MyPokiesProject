@@ -2,6 +2,15 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { logger } from '@mypokies/monitoring'
 import ActiveOffersClient from './ActiveOffersClient'
 
+export interface TriggerContext {
+  deposit_amount?: number
+  game_id?: string
+  game_name?: string
+  wagering_amount?: number
+  trigger_source?: string
+  [key: string]: unknown
+}
+
 export interface TriggeredPromotion {
   id: string
   promotion_id: string
@@ -11,7 +20,7 @@ export interface TriggeredPromotion {
   expires_at: string
   is_live: boolean
   status: 'available' | 'claimed' | 'expired'
-  trigger_context: any
+  trigger_context: TriggerContext
   bonus_id: string | null
   // Joined fields
   promotion_name?: string
@@ -81,7 +90,7 @@ async function getActiveOffers() {
   }
 }
 
-function calculateStats(offers: any[]): ActiveOffersStats {
+function calculateStats(offers: TriggeredPromotion[]): ActiveOffersStats {
   return {
     totalOffers: offers.length,
     liveOffers: offers.filter(o => o.is_live && o.status === 'available').length,
