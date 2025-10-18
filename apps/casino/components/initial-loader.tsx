@@ -2,12 +2,24 @@
 
 import { useEffect, useState, useRef } from 'react'
 
+// Track if loader has been shown in this session (survives re-renders)
+let hasShown = false
+
 export function InitialLoader() {
-  const [show, setShow] = useState(true)
+  const [show, setShow] = useState(!hasShown)
   const [fadeOut, setFadeOut] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
+    // If already shown before, don't show again
+    if (hasShown) {
+      setShow(false)
+      return
+    }
+
+    // Mark as shown
+    hasShown = true
+
     // Show loader for 2.5 seconds
     const timer = setTimeout(() => {
       setFadeOut(true)
