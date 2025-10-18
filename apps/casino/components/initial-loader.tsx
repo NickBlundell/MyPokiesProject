@@ -8,22 +8,17 @@ export function InitialLoader() {
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
-
-    // Hide loader when video ends
-    const handleVideoEnd = () => {
+    // Show loader for 2.5 seconds
+    const timer = setTimeout(() => {
       setFadeOut(true)
       // Wait for fade out animation to complete
       setTimeout(() => {
         setShow(false)
       }, 500)
-    }
-
-    video.addEventListener('ended', handleVideoEnd)
+    }, 2500)
 
     return () => {
-      video.removeEventListener('ended', handleVideoEnd)
+      clearTimeout(timer)
     }
   }, [])
 
