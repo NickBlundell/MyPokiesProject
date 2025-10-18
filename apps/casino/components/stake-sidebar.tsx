@@ -665,7 +665,7 @@ export const StakeSidebar = memo(function StakeSidebar({ user }: StakeSidebarPro
               {jackpotLoading ? (
                 <div className="text-4xl text-yellow-400">Loading...</div>
               ) : (
-                <JackpotCounter useAnimation={true} className="text-4xl" glowSize={0.75} />
+                <JackpotCounter useAnimation={true} className="text-4xl" />
               )}
             </div>
             <div className="mt-1 mb-2 mx-4 flex justify-end pr-1">
@@ -707,7 +707,6 @@ export const StakeSidebar = memo(function StakeSidebar({ user }: StakeSidebarPro
                 <JackpotCounter
                   useAnimation={true}
                   className={isCollapsed ? 'text-2xl' : 'text-4xl'}
-                  glowSize={0.75}
                 />
               )}
             </div>

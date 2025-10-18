@@ -72,7 +72,7 @@ export default function JackpotPage({ user }: JackpotPageProps) {
                 </div>
                 <div className="bg-black flex items-center justify-center" style={{ border: '8px solid #FFD700', padding: '0 6rem', width: '900px', boxShadow: '0 0 20px 4px #60a5fa' }}>
                   <div style={{ fontSize: '3.375rem' }}>
-                    <JackpotCounter useAnimation={true} strokeWidth={2} shadowSize={2.7} color="#2563eb" />
+                    <JackpotCounter useAnimation={true} />
                   </div>
                 </div>
               </div>
@@ -85,7 +85,7 @@ export default function JackpotPage({ user }: JackpotPageProps) {
                 </div>
                 <div className="bg-black flex items-center justify-center px-6 py-2 w-full" style={{ border: '4px solid #FFD700', boxShadow: '0 0 15px 3px #60a5fa' }}>
                   <div className="text-2xl">
-                    <JackpotCounter useAnimation={true} strokeWidth={2} shadowSize={2.7} color="#2563eb" />
+                    <JackpotCounter useAnimation={true} />
                   </div>
                 </div>
               </div>
@@ -141,7 +141,7 @@ export default function JackpotPage({ user }: JackpotPageProps) {
                 </div>
                 <div className="bg-black flex items-center justify-center" style={{ border: '4.5px solid #FFD700', padding: '0 2.6rem', width: '630px', boxShadow: '0 0 20px 4px #dc2626' }}>
                   <div style={{ fontSize: '2.23rem' }}>
-                    <JackpotCounter value={grandPrize} strokeWidth={2} shadowSize={1.5} color="#dc2626" />
+                    <JackpotCounter value={grandPrize} />
                   </div>
                 </div>
                 <div className="mt-3 text-center" style={{ width: '630px' }}>
@@ -159,7 +159,7 @@ export default function JackpotPage({ user }: JackpotPageProps) {
                 </div>
                 <div className="bg-black flex items-center justify-center px-6 py-2 w-full" style={{ border: '4px solid #FFD700', boxShadow: '0 0 15px 3px #dc2626' }}>
                   <div className="text-2xl">
-                    <JackpotCounter value={grandPrize} strokeWidth={2} shadowSize={1.5} color="#dc2626" />
+                    <JackpotCounter value={grandPrize} />
                   </div>
                 </div>
                 <div className="mt-3 text-center">
@@ -212,7 +212,7 @@ export default function JackpotPage({ user }: JackpotPageProps) {
                   </div>
                   <div className="bg-black flex items-center justify-center" style={{ border: '4px solid #FFD700', padding: '0 2.6rem', width: '415px', boxShadow: '0 0 20px 4px #16a34a' }}>
                     <div style={{ fontSize: '1.47rem' }}>
-                      <JackpotCounter value={majorPrize} strokeWidth={1.5} shadowSize={1.01} color="#16a34a" glowSize={0.6} />
+                      <JackpotCounter value={majorPrize} />
                     </div>
                   </div>
                   <div className="mt-3 text-center" style={{ width: '415px' }}>
@@ -262,7 +262,7 @@ export default function JackpotPage({ user }: JackpotPageProps) {
                   </div>
                   <div className="bg-black flex items-center justify-center" style={{ border: '4px solid #FFD700', padding: '0 2.6rem', width: '415px', boxShadow: '0 0 20px 4px #ea580c' }}>
                     <div style={{ fontSize: '1.47rem' }}>
-                      <JackpotCounter value={minorPrize} strokeWidth={1.5} shadowSize={1.01} color="#ea580c" glowSize={0.6} />
+                      <JackpotCounter value={minorPrize} />
                     </div>
                   </div>
                   <div className="mt-3 text-center" style={{ width: '415px' }}>
@@ -283,7 +283,7 @@ export default function JackpotPage({ user }: JackpotPageProps) {
                   </div>
                   <div className="bg-black flex items-center justify-center px-3 py-1.5 w-full" style={{ border: '3px solid #FFD700', boxShadow: '0 0 10px 2px #16a34a' }}>
                     <div className="text-sm">
-                      <JackpotCounter value={majorPrize} strokeWidth={1.5} shadowSize={1.01} color="#16a34a" glowSize={0.6} />
+                      <JackpotCounter value={majorPrize} />
                     </div>
                   </div>
                   <div className="mt-2 text-center">
@@ -301,7 +301,7 @@ export default function JackpotPage({ user }: JackpotPageProps) {
                   </div>
                   <div className="bg-black flex items-center justify-center px-3 py-1.5 w-full" style={{ border: '3px solid #FFD700', boxShadow: '0 0 10px 2px #ea580c' }}>
                     <div className="text-sm">
-                      <JackpotCounter value={minorPrize} strokeWidth={1.5} shadowSize={1.01} color="#ea580c" glowSize={0.6} />
+                      <JackpotCounter value={minorPrize} />
                     </div>
                   </div>
                   <div className="mt-2 text-center">
